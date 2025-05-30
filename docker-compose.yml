@@ -1,0 +1,17 @@
+---
+name: ${PROJECT_NAME}
+networks:
+  default:
+    name: ${HOST_GROUP_NAME}
+    # external: true # If network already exists, use this and comment out rest
+    # For specific subnets, use or modify the configuration below
+    driver: bridge
+    attachable: true
+    # internal: true # OPTIONAL: If Internet access is unneeded for this network
+    enable_ipv6: false # OPTIONAL: affects IPv6 subnet line below
+    # ipam:
+    #   # for defining specific network ranges
+    #   config:
+    #     - subnet:  172.18.0.0/24
+    #       gateway: 172.18.0.1
+    #     - subnet: fe80:db8::/64
