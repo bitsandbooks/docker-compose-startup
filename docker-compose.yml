@@ -27,3 +27,5 @@ include:
   - path:     ${HOST_COMPOSE_FOLDER}/traefik.yml
     env_file: ${HOST_COMPOSE_FOLDER}/traefik.env
   - path:     ${HOST_COMPOSE_FOLDER}/docker-proxy.yml
+  - path:     ${HOST_COMPOSE_FOLDER}/dns.yml
+    env_file: ${HOST_COMPOSE_FOLDER}/dns.env
