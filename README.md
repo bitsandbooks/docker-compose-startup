@@ -36,12 +36,14 @@ you need to do to make the stack work.
 
 ### `HOST_DATA_FOLDER`
 
-This folder is where stateful data lives for your services. Major sections are
-`apps` for service data, `databases` for raw databas
+This folder is where stateful data lives for your services. Major sections 
+include:
 
-Each service goes in individually-named folders in `apps`, inside each of which
-are sub-folders for configuration, data, logs, etc. Some service files may refer
-to the `secrets` folder to get passwords, tokens, certificates, etc. For
+- `apps` is for named service folders, inside each of which are sub-folders for
+  configuration, data, logs, etc. 
+- `databases` is for "hot" database data, the equivalent of folders like 
+  `/var/lib/mysql` or `/var/lib/postgresql`.
+- `secrets` is for passwords, tokens, certificates, etc. For
 security reasons, care should be taken to secure the contents of this folder
 (for example, by mounting a LUKS volume at `$HOST_DATA_FOLDER/secrets`).
 
@@ -55,5 +57,18 @@ security reasons, care should be taken to secure the contents of this folder
     │    │    └── data
     │    ├── traefik
     │    └── ...
+    ├── databases
+    │    ├── mysql
+    │    ├── pgsql
+    │    └── ...
     ├── secrets <-- This should be secured!
     └── ...
+
+## Memory and Resources
+
+All containers are set by default to have a CPU limit of 2.0 and a memory limit
+of 1 gigabyte. For memory- and CPU-intensive services (such as databases) this
+will result in poor performance. Tune these values in individual compose files
+to ones more appropriate to your system.
+
+**TODO:** Make CPU/memory settings variables in environment files

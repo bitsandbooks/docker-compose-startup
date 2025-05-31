@@ -1,0 +1,272 @@
+networks:
+  # This chunk of the stack comes with its own network in addition to the
+  # default one in `docker-compose.yml`, so if apps want to access these 
+  # databases, they must join this network.
+  databases:
+    external: false # if manually created, set this to true...
+    name: databases # ...and put its name here
+services:
+  minio:
+    image: docker.io/minio/minio:${MINIO_IMAGE_TAG}
+    container_name: minio
+    command: "server --console-address ':${MINIO_LISTEN_PORT}' /data"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/minio/data:/data
+    expose:
+      - ${MINIO_DASHBOARD_PORT}
+    networks:
+      - default
+      - databases
+    ports:
+      - 9000:9000
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.minio.entrypoints: websecure
+      traefik.http.routers.minio.rule: "Host(`minio.${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.minio.tls: true
+      traefik.http.routers.minio.tls.certresolver: production
+      traefik.http.services.minio.loadbalancer.server.port: ${MINIO_DASHBOARD_PORT}
+      homepage.group: Databases
+      homepage.name: MinIO
+      homepage.href: "https://minio.${HOST_FQDN_LOCAL}/browser"
+      homepage.description: S3-compatible object store
+      homepage.icon: minio.png
+      glance.name: MinIO
+      glance.description: S3-compatible object store
+      glance.url: "https://minio.${HOST_FQDN_LOCAL}/browser"
+      glance.icon: sh:minio-light
+      glance.parent: Databases
+  mysql:
+    image: docker.io/library/mysql:8.0
+    container_name: mysql
+    volumes:
+      # - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/config:/etc/mysql/conf.d:ro
+      - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/data:/var/lib/mysql
+      - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/log:/var/log/mysql
+      - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/run:/var/run/mysqld
+      - ${HOST_DATA_FOLDER}/backups/databases:/media:ro
+      # - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/initdb.d:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - default
+      - databases
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    labels:
+      com.nihilsum.class: composed
+      "com.nihilsum.service:base": true
+      "com.nihilsum.service:startup": true
+      io.containers.autoupdate: registry
+      glance.name: MySQL server
+      glance.parent: Databases
+  mysql-workbench:
+    image: lscr.io/linuxserver/mysql-workbench:latest
+    container_name: mysql-workbench
+    depends_on:
+      - mysql
+    devices:
+      - /dev/dri:/dev/dri # intel quicksync (optional)
+    environment:
+      PUID: ${MYSQL_WORKBENCH_UID}
+      PGID: ${MYSQL_WORKBENCH_GID}
+      TZ: ${HOST_TIME_ZONE}
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/mysql-workbench/config:/config
+      # - /var/run/mysqld/mysqld.sock:/config/mysqld.sock
+      # - ${HOST_DATA_FOLDER}/databases/mysql/run/mysqld.sock:/config/mysqld.sock
+      - ${HOST_DATA_FOLDER}/backups/databases:/media
+    networks:
+      - default
+      - databases
+    expose:
+      - ${MYSQL_WORKBENCH_HTTP_PORT}
+      - ${MYSQL_WORKBENCH_HTTPS_PORT}
+    cap_add:
+      - IPC_LOCK
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: "on-failure"
+        max_attempts: 3
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.mysql-workbench.entrypoints: websecure
+      traefik.http.routers.mysql-workbench.rule: "Host(`mysql-workbench.${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.mysql-workbench.tls: true
+      traefik.http.routers.mysql-workbench.tls.certresolver: production
+      traefik.http.services.mysql-workbench.loadbalancer.server.port: ${MYSQL_WORKBENCH_HTTP_PORT}
+      homepage.group: Databases
+      homepage.name: MySQL Workbench
+      homepage.description: for MySQL and MariaDB databases
+      homepage.href: https://mysql-workbench.${HOST_FQDN_LOCAL}
+      homepage.icon: mysql.png
+      glance.name: MySQL Workbench
+      glance.description: MySQL database
+      glance.url: https://mysql-workbench.${HOST_FQDN_LOCAL}
+      glance.icon: si:mysql
+      glance.parent: Databases
+      glance.id: MySQLWorkbench
+  postgresql:
+    image: docker.io/library/postgres:16
+    container_name: postgresql
+    volumes:
+      - ${HOST_DATA_FOLDER}/databases/pgsql/ganesha/data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # PGDATA: "/var/lib/postgresql/data"
+    networks:
+      - default
+      - databases
+    ports:
+      - 5432:5432
+    shm_size: 256mb
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    labels:
+      io.containers.autoupdate: registry
+      glance.name: Postgres server
+      glance.parent: Databases
+  pgadmin:
+    image: docker.io/dpage/pgadmin4:8
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "${POSTGRES_USER}@${HOST_GROUP_NAME}.com"
+      PGADMIN_DEFAULT_PASSWORD: ${POSTGRES_PASSWORD}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
+    networks:
+      - default
+      - databases
+    expose:
+      - ${PGADMIN_LISTEN_PORT}
+    volumes:
+      # - ${HOST_DATA_FOLDER}/apps/pgadmin/certs:/certs
+      # - ${HOST_DATA_FOLDER}/apps/pgadmin/config:/pgadmin4
+      - ${HOST_DATA_FOLDER}/apps/pgadmin/data:/var/lib/pgadmin
+    depends_on:
+      - postgresql
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.pgadmin.entrypoints: websecure
+      traefik.http.routers.pgadmin.rule: "Host(`pgadmin.${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.pgadmin.tls: true
+      traefik.http.routers.pgadmin.tls.certresolver: production
+      traefik.http.services.pgadmin.loadbalancer.server.port: ${PGADMIN_LISTEN_PORT}
+      homepage.group: Databases
+      homepage.name: PGAdmin
+      homepage.description: for Postgres databases
+      homepage.href: "https://pgadmin.${HOST_FQDN_LOCAL}/browser"
+      homepage.icon: pgadmin.png
+      glance.name: PGAdmin
+      glance.description: Postgres database
+      glance.url: https://pgadmin.${HOST_FQDN_LOCAL}/browser
+      glance.icon: sh:pgadmin
+      glance.id: Postgres
+      glance.parent: Databases
+  redis:
+    image: docker.io/library/redis:7
+    container_name: redis
+    volumes:
+      - ${HOST_DATA_FOLDER}/databases/redis/ganesha/data:/data
+      # - ${HOST_DATA_FOLDER}/databases/redis/config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - default
+      - databases
+    ports:
+      - 6379:6379
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    labels:
+      io.containers.autoupdate: image
+      glance.name: Redis server
+      glance.parent: Databases
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    depends_on:
+      - redis
+    user: ${HOST_USER_UID}:${HOST_USER_GID}
+    # environment:
+    # RI_APP_HOST: redis
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/redis-insight/data:/data:rw
+    networks:
+      - default
+      - databases
+    expose:
+      - ${REDIS_INSIGHT_HTTP_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.redis-insight.entrypoints: websecure
+      traefik.http.routers.redis-insight.rule: "Host(`redis-insight.${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.redis-insight.tls: true
+      traefik.http.routers.redis-insight.tls.certresolver: production
+      traefik.http.services.redis-insight.loadbalancer.server.port: ${REDIS_INSIGHT_HTTP_PORT}
+      homepage.name: Redis Insight
+      homepage.description: for Redis databases
+      homepage.icon: redis.png
+      homepage.href: "https://redis-insight.${HOST_FQDN_LOCAL}/browser"
+      homepage.group: Databases
+      glance.name: Redis Insight
+      glance.description: NoSQL database
+      glance.icon: sh:redis
+      glance.url: https://redis-insight.${HOST_FQDN_LOCAL}/browser
+      glance.id: Redis
+      glance.parent: Databases
