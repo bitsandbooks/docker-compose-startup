@@ -31,4 +31,5 @@ include:
     env_file: ${HOST_COMPOSE_FOLDER}/dns.env
   - path:     ${HOST_COMPOSE_FOLDER}/databases.yml
     env_file: ${HOST_COMPOSE_FOLDER}/databases.env
-  
+  - path:     ${HOST_COMPOSE_FOLDER}/syncthing.yml
+    env_file: ${HOST_COMPOSE_FOLDER}/syncthing.env

@@ -33,6 +33,8 @@ you need to do to make the stack work.
   Default: `valleylodge`
 - `HOST_IPV4_LOCAL`: The IP address of the host machine on the LAN. Default:
   `192.168.1.2`
+- `HOST_USER_UID`: The user ID of the user running this stack. Default: `1000`
+- `HOST_USER_GID`: The group ID of the user running this stack. Default: `1000`
 
 ### `HOST_DATA_FOLDER`
 
@@ -71,4 +73,7 @@ of 1 gigabyte. For memory- and CPU-intensive services (such as databases) this
 will result in poor performance. Tune these values in individual compose files
 to ones more appropriate to your system.
 
-**TODO:** Make CPU/memory settings variables in environment files
+## TODO
+
+- Make CPU/memory settings variables in environment files
+- Provide example `$HOST_DATA_FOLDER` with reference configs
