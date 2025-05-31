@@ -5,7 +5,11 @@ services:
     environment:
       # All options in README file at https://github.com/Tecnativa/docker-socket-proxy/blob/master/README.md
       - CONTAINERS=1 # Allow access to viewing containers
+      - IMAGES=1
+      - INFO=1
       - LOG_LEVEL=info # debug,info,notice,warning,err,crit,alert,emerg
+      - NETWORKS=1
+      - NODES=0
       - POST=0 # Disallow any POST operations (effectively read-only)
       - SERVICES=1 # Allow access to viewing services (needed for Docker Swarm)
       - TASKS=1 # Allow access to viewing tasks (needed for Docker Swarm)
