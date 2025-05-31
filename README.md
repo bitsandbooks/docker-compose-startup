@@ -11,9 +11,19 @@ Provides an easy-to-extend stack of services via Docker Compose.
 
 ## Usage
 
-To bring the stack up once at a terminal prompt, type `docker compose --file
+To bring the stack up manually at a terminal prompt, type `docker compose --file
 /path/to/docker-compose.yml --env-file /path/to/docker-compose.env up --detach`
-and press Enter.
+and press Enter. To bring it down manually, use `docker compose --file
+/path/to/docker-compose.yml --env-file /path/to/docker-compose.env down`.
+
+The repo also includes a [`systemd.service(5)`][svcunit] unit file, for bringing
+the stack up and down automatically with a Linux host. Just change the paths in
+the unit file to point to your compose and env files, change the user and group,
+put the file in `/etc/systemd/system`, reload systemd with `systemctl 
+daemon-reload`, and activate it with `systemctl enable --now 
+docker-compose-startup.service`.
+
+[svcunit]: https://www.freedesktop.org/software/systemd/man/251/systemd.service.html
 
 ## Shared Variables
 
