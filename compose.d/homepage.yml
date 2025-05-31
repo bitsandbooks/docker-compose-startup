@@ -1,0 +1,36 @@
+services:
+  homepage-local:
+    image: ghcr.io/gethomepage/homepage:${HOMEPAGE_VERSION_TAG}
+    container_name: homepage-local
+    hostname: ${HOST_NAME}
+    environment:
+      PUID: ${HOST_USER_UID}
+      PGID: ${HOST_USER_GID}
+      LOG_LEVEL: debug
+      HOMEPAGE_ALLOWED_HOSTS: ${HOST_FQDN_LOCAL}
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/homepage/config:/app/config:rw
+      - ${HOST_DATA_FOLDER}/apps/homepage/assets:/app/public/assets:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    expose:
+      - ${HOMEPAGE_HTTP_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.homepage.entrypoints: websecure
+      traefik.http.routers.homepage.rule: "Host(`${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.homepage.tls: true
+      traefik.http.routers.homepage.tls.certresolver: production
+      traefik.http.routers.homepage.tls.domains[0].main: "${HOST_FQDN_LOCAL}"
+      traefik.http.routers.homepage.tls.domains[0].sans: "*.${HOST_FQDN_LOCAL}"
+      traefik.http.services.homepage.loadbalancer.server.port: ${HOMEPAGE_HTTP_PORT}
