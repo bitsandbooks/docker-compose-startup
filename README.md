@@ -53,11 +53,16 @@ include:
 
 - `apps` is for named service folders, inside each of which are sub-folders for
   configuration, data, logs, etc. 
+- `backups` is for backup data, such as snapshots of databases, or [restic][] or
+  [borg][] repositories.
 - `databases` is for "hot" database data, the equivalent of folders like 
   `/var/lib/mysql` or `/var/lib/postgresql`.
 - `secrets` is for passwords, tokens, certificates, etc. For
-security reasons, care should be taken to secure the contents of this folder
-(for example, by mounting a LUKS volume at `$HOST_DATA_FOLDER/secrets`).
+  security reasons, care should be taken to secure the contents of this folder
+  (for example, by mounting a LUKS volume at `$HOST_DATA_FOLDER/secrets`).
+
+[restic]: https://restic.net/
+[borg]: https://www.borgbackup.org/
 
 `$HOST_DATA_FOLDER` looks like this:
 
@@ -68,6 +73,10 @@ security reasons, care should be taken to secure the contents of this folder
     │    │    ├── config
     │    │    └── data
     │    ├── traefik
+    │    └── ...
+    ├── backups
+    │    ├── databases
+    │    ├── restic
     │    └── ...
     ├── databases
     │    ├── mysql
