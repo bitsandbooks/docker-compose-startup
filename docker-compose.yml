@@ -33,3 +33,5 @@ include:
     env_file: ${HOST_COMPOSE_FOLDER}/databases.env
   - path:     ${HOST_COMPOSE_FOLDER}/syncthing.yml
     env_file: ${HOST_COMPOSE_FOLDER}/syncthing.env
+  - path:     ${HOST_COMPOSE_FOLDER}/portainer.yml
+    env_file: ${HOST_COMPOSE_FOLDER}/portainer.env

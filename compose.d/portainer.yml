@@ -1,0 +1,68 @@
+services:
+  portainer-agent:
+    image: docker.io/portainer/agent:linux-amd64
+    container_name: portainer-agent
+    hostname: ${HOST_NAME}
+    ports:
+      - ${HOST_IPV4_LOCAL}:${PORTAINER_AGENT_PORT}:9001
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    labels:
+      com.nihilsum.class: composed
+      "com.nihilsum.service:startup": true
+      io.containers.autoupdate: registry
+      glance.name: "Portainer Agent @ ganesha"
+      glance.parent: Portainer
+  portainer-server:
+    image: docker.io/portainer/portainer-ce:linux-amd64
+    container_name: portainer-server
+    hostname: ${HOST_NAME}
+    security_opt:
+      - no-new-privileges:true
+    expose:
+      - 8000
+      - 9000
+      - 9443
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/portainer/data:/data:rw
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /var/lib/docker/volumes:/var/lib/docker/volumes:rw
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.portainer-server.entrypoints: websecure
+      traefik.http.routers.portainer-server.rule: "Host(`portainer.${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.portainer-server.tls: true
+      traefik.http.routers.portainer-server.tls.certresolver: production
+      traefik.http.services.portainer-server.loadbalancer.server.port: ${PORTAINER_SERVER_PORT}
+      homepage.group: System Services
+      homepage.name: Portainer
+      homepage.description: Container management
+      homepage.icon: portainer.png
+      homepage.href: "https://portainer.${HOST_FQDN_LOCAL}"
+      homepage.widget.type: portainer
+      homepage.widget.url: https://portainer-server:9443
+      homepage.widget.env: ${PORTAINER_WIDGET_ENVIRONMENT_ID}
+      homepage.widget.key: ${PORTAINER_WIDGET_KEY}
+      glance.name: Portainer
+      glance.description: Container management
+      glance.icon: si:portainer
+      glance.url: https://portainer.${HOST_FQDN_LOCAL}
+      glance.id: Portainer
