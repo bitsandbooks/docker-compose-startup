@@ -1,0 +1,45 @@
+volumes:
+  backrest_cache:
+services:
+  backrest:
+    image: docker.io/garethgeorge/backrest:latest
+    container_name: backrest
+    volumes:
+      - backrest_cache:/cache
+      - ${HOST_DATA_FOLDER}/apps/backrest/data:/data
+      - ${HOST_DATA_FOLDER}/apps/backrest/config:/config
+      - ${HOST_DATA_FOLDER}/backups/restic:/repos:rw # [optional] mount repos if using local storage, not necessary for remotes e.g. B2, S3, etc.
+      - ${HOST_DATA_FOLDER}:/var/local:ro # [optional] mount local paths you want to back up.
+      - ${HOST_DATA_FOLDER}/backups/mnt:/mnt:rw
+    environment:
+      BACKREST_PORT: ${BACKREST_WEB_PORT} # default 9898
+      BACKREST_DATA: /data # path for backrest data. restic binary and the database are placed here.
+      BACKREST_CONFIG: /config/config.json # path for the backrest config file.
+      XDG_CACHE_HOME: /cache # path for the restic cache which greatly improves performance.
+      TZ: ${HOST_TIME_ZONE} # set the timezone for the container, used as the timezone for cron jobs.
+    expose:
+      - ${BACKREST_WEB_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+    labels:
+      traefik.enable: true
+      traefik.http.routers.backrest.entrypoints: websecure
+      traefik.http.routers.backrest.rule: Host(`backrest.${HOST_FQDN_LOCAL}`)
+      traefik.http.routers.backrest.tls: true
+      traefik.http.routers.backrest.tls.certresolver: production
+      traefik.http.services.backrest.loadbalancer.server.port: ${BACKREST_WEB_PORT}
+      homepage.group: System Services
+      homepage.name: Backrest
+      homepage.description: Restic backup tool
+      homepage.href: "https://backrest.${HOST_FQDN_LOCAL}"
+      homepage.icon: backrest.png
+      glance.name: Backrest
+      glance.description: Restic backup tool
+      glance.url: https://backrest.${HOST_FQDN_LOCAL}
+      glance.icon: sh:backrest-light
