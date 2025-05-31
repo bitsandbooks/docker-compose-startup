@@ -52,12 +52,12 @@ services:
     image: docker.io/library/mysql:8.0
     container_name: mysql
     volumes:
-      # - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/config:/etc/mysql/conf.d:ro
-      - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/data:/var/lib/mysql
-      - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/log:/var/log/mysql
-      - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/run:/var/run/mysqld
+      # - ${HOST_DATA_FOLDER}/databases/mysql/config:/etc/mysql/conf.d:ro
+      - ${HOST_DATA_FOLDER}/databases/mysql/data:/var/lib/mysql
+      - ${HOST_DATA_FOLDER}/databases/mysql/log:/var/log/mysql
+      - ${HOST_DATA_FOLDER}/databases/mysql/run:/var/run/mysqld
       - ${HOST_DATA_FOLDER}/backups/databases:/media:ro
-      # - ${HOST_DATA_FOLDER}/databases/mysql/${HOST_NAME}/initdb.d:/docker-entrypoint-initdb.d:ro
+      # - ${HOST_DATA_FOLDER}/databases/mysql/initdb.d:/docker-entrypoint-initdb.d:ro
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
