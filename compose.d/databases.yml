@@ -97,7 +97,7 @@ services:
       - ${HOST_DATA_FOLDER}/apps/mysql-workbench/config:/config
       # - /var/run/mysqld/mysqld.sock:/config/mysqld.sock
       # - ${HOST_DATA_FOLDER}/databases/mysql/run/mysqld.sock:/config/mysqld.sock
-      - ${HOST_DATA_FOLDER}/backups/databases:/media
+      - ${HOST_DATA_FOLDER}/backups/databases:/media:rw
     networks:
       - default
       - databases
