@@ -38,4 +38,6 @@ include:
   - path:     ${HOST_COMPOSE_FOLDER}/homepage.yml
     env_file: ${HOST_COMPOSE_FOLDER}/homepage.env
   - path:     ${HOST_COMPOSE_FOLDER}/backrest.yml
-    env_file: ${HOST_COMPOSE_FOLDER}/backrest.env  
+    env_file: ${HOST_COMPOSE_FOLDER}/backrest.env
+  - path:     ${HOST_COMPOSE_FOLDER}/filebrowser.yml
+    env_file: ${HOST_COMPOSE_FOLDER}/filebrowser.env

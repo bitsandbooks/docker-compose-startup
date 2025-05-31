@@ -1,0 +1,39 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:v2-s6
+    container_name: filebrowser
+    environment:
+      PUID: ${HOST_USER_UID}
+      PGID: ${HOST_USER_GID}
+      # FB_BASEURL: '/'
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/filebrowser/config/filebrowser.db:/database/filebrowser.db:rw
+      - ${HOST_DATA_FOLDER}/apps/filebrowser/config/settings.json:/config/settings.json:rw
+      - ${HOST_DATA_FOLDER}/apps:/trunk/apps:rw
+      - ${HOST_DATA_FOLDER}/backups:/trunk/backups:rw
+      # - ${HOST_DATA_FOLDER}/media:/trunk/media:rw # [optional] putting folders here make them visible to File Browser
+      # - /home:/srv/home:ro # [optional, insecure] read-only view of home folders
+    expose:
+      - ${FILEBROWSER_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    labels:
+      io.containers.autoupdate: registry
+      traefik.enable: true
+      traefik.http.routers.filebrowser.rule: "Host(`filebrowser.${HOST_FQDN_LOCAL}`)"
+      traefik.http.routers.filebrowser.entrypoints: websecure
+      traefik.http.routers.filebrowser.tls: true
+      traefik.http.routers.filebrowser.tls.certresolver: production
+      traefik.http.services.filebrowser.loadbalancer.server.port: ${FILEBROWSER_PORT}
+      homepage.group: System Services
+      homepage.name: File Browser
+      homepage.description: Web-based file browser
+      homepage.icon: mdi-folder.png
+      homepage.href: "https://filebrowser.${HOST_FQDN_LOCAL}/browser"
+      
