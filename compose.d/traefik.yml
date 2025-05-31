@@ -1,0 +1,51 @@
+secrets:
+  DO_AUTH_TOKEN:
+    # Since we're using DigitalOcean's DNS to verify our Let's Encrypt
+    # certificates for the local network, we need a DO API token (available at
+    # https://cloud.digitalocean.com/account/api/tokens ), which is stored in a
+    # special "secrets" mount (such as a LUKS volume)
+    file: "${HOST_DATA_FOLDER}/secrets/${TRAEFIK_ACME_TOKEN_FILE}"
+services:
+  traefik:
+    image: traefik:3
+    container_name: traefik
+    security_opt:
+      - no-new-privileges:true
+    secrets:
+      - DO_AUTH_TOKEN
+    environment:
+      # Which format?
+      DO_AUTH_TOKEN_FILE: /run/secrets/DO_AUTH_TOKEN
+      DO_AUTH_TOKEN__FILE: /run/secrets/DO_AUTH_TOKEN
+    expose:
+      - 8080 # Dashboard
+    ports:
+      - ${HOST_IPV4_LOCAL}:80:80 # HTTP (LAN)
+      - ${HOST_IPV4_LOCAL}:443:443 # HTTPS (LAN)
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ${HOST_DATA_FOLDER}/apps/traefik/logs:/var/log/traefik:rw # for logs
+      - ${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites:rw # for File provider
+      - ${HOST_DATA_FOLDER}/secrets/traefik-acme.json:/etc/traefik/certs/acme.json:rw # for Let's Encrypt certificates
+      - /var/run/docker.sock:/var/run/docker.sock:ro # for Docker provider
+    labels:
+      io.containers.autoupdate: registry
+      homepage.group: Top Services
+      homepage.name: Traefik Dashboard
+      homepage.icon: traefik.png
+      homepage.href: "${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT}"
+      homepage.description: Reverse proxy
+      homepage.widget.type: traefik
+      homepage.widget.url: http://traefik:8080
+      glance.name: Traefik Dashboard
+      glance.description: Reverse proxy
+      glance.icon: sh:traefik
+      glance.url: ${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
