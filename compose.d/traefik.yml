@@ -25,7 +25,7 @@ services:
     volumes:
       - ${HOST_DATA_FOLDER}/apps/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - ${HOST_DATA_FOLDER}/apps/traefik/logs:/var/log/traefik:rw # for logs
-      - ${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites:rw # for File provider
+      - ${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites:ro # for File provider
       - ${HOST_DATA_FOLDER}/secrets/traefik-acme.json:/etc/traefik/certs/acme.json:rw # for Let's Encrypt certificates
       - /var/run/docker.sock:/var/run/docker.sock:ro # for Docker provider
     labels:
