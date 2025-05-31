@@ -10,7 +10,6 @@ services:
     volumes:
       - ${HOST_DATA_FOLDER}/apps/syncthing/data:/data:rw
       - ${HOST_DATA_FOLDER}/apps/syncthing/config:/config:rw
-      - ${HOST_DATA_FOLDER}/apps/homepage:/homepage:rw
     expose:
       - ${SYNCTHING_WEB_PORT}
     ports:
