@@ -9,9 +9,9 @@ services:
       - POST=0 # Disallow any POST operations (effectively read-only)
       - LOG_LEVEL=info # debug,info,notice,warning,err,crit,alert,emerg
       # - IMAGES=1
-      # - INF0: 1
-      # - NETWORKS: 1
-      # - NODES: 0
+      # - INF0=1
+      # - NETWORKS=1
+      # - NODES=0
     security_opt:
       - no-new-privileges=true
     expose:
