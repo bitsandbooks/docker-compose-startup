@@ -28,8 +28,8 @@ docker-compose-startup.service`.
 ## Shared Variables
 
 This stack uses a number of variables throughout, most of which are found in
-`docker-compose.env`. Customizing this file to match your system should be all
-you need to do to make the stack work.
+`docker-compose.env`. Customizing this file to match your system, and having
+valid config files for services in place, should make the stack work.
 
 - `PROJECT_NAME`: Overall name of the project (or "stack", as it is called in
   Portainer). Default: `startup`
