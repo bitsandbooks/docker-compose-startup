@@ -1,0 +1,83 @@
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:amd64-latest
+    container_name: plex
+    hostname: ${HOST_NAME}
+    devices:
+      - /dev/dri:/dev/dri # intel quicksync (optional)
+      - /dev/dvb:/dev/dvb # over-the-air tuner (optional)
+    environment:
+      PUID: ${HOST_USER_UID}
+      PGID: ${HOST_USER_GID}
+      TZ: ${HOST_TIME_ZONE}
+      UMASK: "002" # or "022"
+      VERSION: latest
+    volumes:
+      - ${HOST_DATA_FOLDER}/apps/plex:/config
+      - ${HOST_DATA_FOLDER}/media:/srv/media
+      - /var/cache/plex-transcoder:/tmp # (optional) on faster nvme disk
+      - /usr/bin/ffmpeg:/usr/local/bin/ffmpeg # (optional) for plextools plugin
+      - /usr/bin/ffprobe:/usr/local/bin/ffprobe # (optional) for plextools plugin
+    ports:
+      - 1900:1900/udp
+      - 3005:3005
+      - 5353:5353
+      - 8324:8324
+      - 32400:32400
+      - 32410:32410/udp
+      - 32412-32414:32412-32414/udp
+      - 32469:32469
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    labels:
+      - io.containers.autoupdate=registry
+      - homepage.group=Top Services
+      - homepage.name=Plex
+      - homepage.icon=plex.png
+      - homepage.href=https://app.plex.tv/
+      - homepage.description=Roll your own Netflix
+      - homepage.widget.type=tautulli
+      - homepage.widget.url=http://tautulli:8181/tautulli
+      - homepage.widget.key=${TAUTULLI_API_KEY}
+      - homepage.weight=400
+  tautulli:
+    container_name: tautulli
+    depends_on:
+      - plex
+    environment:
+      PUID: ${HOST_USER_UID}
+      PGID: ${HOST_USER_GID}
+      TZ: ${HOST_TIME_ZONE}
+    image: lscr.io/linuxserver/tautulli:amd64-latest
+    expose:
+      - ${TAUTULLI_WEB_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+        max_attempts: 10
+    volumes:
+      - "${HOST_DATA_FOLDER}/apps/tautulli/config:/config"
+      - "${HOST_DATA_FOLDER}/apps/plex/Library/Application Support/Plex Media Server/Logs:/logs:ro"
+    labels:
+      - io.containers.autoupdate=registry
+      - traefik.enable=true
+      - traefik.http.routers.tautulli.entrypoints=websecure
+      - traefik.http.routers.tautulli.rule=Host(`${HOST_FQDN_LOCAL}`) && PathPrefix(`/tautulli`)
+      - traefik.http.routers.tautulli.tls=true
+      - traefik.http.routers.tautulli.tls.certresolver=production
+      - traefik.http.services.tautulli.loadbalancer.server.port=${TAUTULLI_WEB_PORT}
+      - homepage.group=Media Services
+      - homepage.name=Tautulli
+      - homepage.icon=tautulli.png
+      - homepage.href=https://${HOST_FQDN_LOCAL}/tautulli/home
+      - homepage.description=Stats for Plex
