@@ -28,6 +28,8 @@ services:
       - ${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites:ro # for File provider
       - ${HOST_DATA_FOLDER}/secrets/traefik-acme.json:/etc/traefik/certs/acme.json:rw # for Let's Encrypt certificates
       - /var/run/docker.sock:/var/run/docker.sock:ro # for Docker provider
+    # depends_on:
+    #   - docker-proxy
     labels:
       io.containers.autoupdate: registry
       homepage.group: Top Services
