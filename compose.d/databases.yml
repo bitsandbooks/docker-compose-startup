@@ -48,25 +48,25 @@ services:
       glance.url: "https://minio.${HOST_FQDN_LOCAL}/browser"
       glance.icon: sh:minio-light
       glance.parent: Databases
-  mysql:
-    image: docker.io/library/mysql:8.0
-    container_name: mysql
+  mariadb:
+    image: docker.io/library/mariadb:${MARIADB_IMAGE_TAG}
+    container_name: mariadb
     volumes:
-      # - ${HOST_DATA_FOLDER}/databases/mysql/config:/etc/mysql/conf.d:ro
-      - ${HOST_DATA_FOLDER}/databases/mysql/data:/var/lib/mysql
-      - ${HOST_DATA_FOLDER}/databases/mysql/log:/var/log/mysql
-      - ${HOST_DATA_FOLDER}/databases/mysql/run:/var/run/mysqld
+      # - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/config:/etc/mysql/conf.d:ro
+      - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/data:/var/lib/mysql:rw
+      - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/log:/var/log/mysql:rw
+      - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/run:/var/run/mysqld:rw
       - ${HOST_DATA_FOLDER}/backups/databases:/media:ro
-      # - ${HOST_DATA_FOLDER}/databases/mysql/initdb.d:/docker-entrypoint-initdb.d:ro
+      # - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/initdb.d:/docker-entrypoint-initdb.d:ro
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
+      MARIADB_USER: "${MARIADB_USER}"
+      MARIADB_PASSWORD: "${MARIADB_PASSWORD}"
     networks:
       - default
       - databases
     ports:
-      - ${MYSQL_PORT}:${MYSQL_PORT}
+      - ${MARIADB_PORT}:${MARIADB_PORT}
     deploy:
       resources:
         limits:
@@ -80,8 +80,6 @@ services:
       "com.nihilsum.service:base": true
       "com.nihilsum.service:startup": true
       io.containers.autoupdate: registry
-      glance.name: MySQL server
-      glance.parent: Databases
   mysql-workbench:
     image: lscr.io/linuxserver/mysql-workbench:latest
     container_name: mysql-workbench
