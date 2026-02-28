@@ -1,6 +1,6 @@
 services:
   plex:
-    image: lscr.io/linuxserver/plex:amd64-latest
+    image: lscr.io/linuxserver/plex:${PLEX_IMAGE_VERSION:-amd64-latest}
     container_name: plex
     hostname: ${HOST_NAME}
     devices:
@@ -43,8 +43,8 @@ services:
       - homepage.href=https://app.plex.tv/
       - homepage.description=Roll your own Netflix
       - homepage.widget.type=tautulli
-      - homepage.widget.url=http://tautulli:8181/tautulli
-      - homepage.widget.key=${TAUTULLI_API_KEY}
+      - homepage.widget.url=http://tautulli:${TAUTULLI_WEB_PORT:-8181}/tautulli
+      - homepage.widget.key=${TAUTULLI_API_KEY:-11112222333344445555666677778888}
       - homepage.weight=400
   tautulli:
     container_name: tautulli
@@ -54,9 +54,9 @@ services:
       PUID: ${HOST_USER_UID}
       PGID: ${HOST_USER_GID}
       TZ: ${HOST_TIME_ZONE}
-    image: lscr.io/linuxserver/tautulli:amd64-latest
+    image: lscr.io/linuxserver/tautulli:${TAUTULLI_IMAGE_VERSION:-amd64-latest}
     expose:
-      - ${TAUTULLI_WEB_PORT}
+      - ${TAUTULLI_WEB_PORT:-8181}
     deploy:
       resources:
         limits:
@@ -75,7 +75,7 @@ services:
       - traefik.http.routers.tautulli.rule=Host(`${HOST_FQDN_LOCAL}`) && PathPrefix(`/tautulli`)
       - traefik.http.routers.tautulli.tls=true
       - traefik.http.routers.tautulli.tls.certresolver=production
-      - traefik.http.services.tautulli.loadbalancer.server.port=${TAUTULLI_WEB_PORT}
+      - traefik.http.services.tautulli.loadbalancer.server.port=${TAUTULLI_WEB_PORT:-8181}
       - homepage.group=Media Services
       - homepage.name=Tautulli
       - homepage.icon=tautulli.png
