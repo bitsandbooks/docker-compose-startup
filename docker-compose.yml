@@ -34,6 +34,5 @@ include:
   - path:     ${HOST_COMPOSE_FOLDER}/homepage.yml
   - path:     ${HOST_COMPOSE_FOLDER}/backrest.yml
   - path:     ${HOST_COMPOSE_FOLDER}/filebrowser.yml
-    env_file: ${HOST_COMPOSE_FOLDER}/filebrowser.env
   - path:     ${HOST_COMPOSE_FOLDER}/plex.yml
     env_file: ${HOST_COMPOSE_FOLDER}/plex.env
