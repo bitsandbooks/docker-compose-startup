@@ -7,9 +7,9 @@ networks:
     name: databases # ...and put its name here
 services:
   minio:
-    image: docker.io/minio/minio:${MINIO_IMAGE_TAG}
+    image: docker.io/minio/minio:${MINIO_IMAGE_TAG:-RELEASE.2025-04-22T22-12-26Z}
     container_name: minio
-    command: "server --console-address ':${MINIO_LISTEN_PORT}' /data"
+    command: "server --console-address ':${MINIO_LISTEN_PORT:-9000}' /data"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
@@ -21,7 +21,7 @@ services:
       - default
       - databases
     ports:
-      - 9000:9000
+      - ${MINIO_LISTEN_PORT:-9000}:${MINIO_LISTEN_PORT:-9000}
     deploy:
       resources:
         limits:
@@ -88,8 +88,8 @@ services:
     devices:
       - /dev/dri:/dev/dri # intel quicksync (optional)
     environment:
-      PUID: ${MYSQL_WORKBENCH_UID}
-      PGID: ${MYSQL_WORKBENCH_GID}
+      PUID: ${MYSQL_WORKBENCH_UID:-135}
+      PGID: ${MYSQL_WORKBENCH_GID:-144}
       TZ: ${HOST_TIME_ZONE}
     volumes:
       - ${HOST_DATA_FOLDER}/apps/mysql-workbench/config:/config
@@ -100,8 +100,8 @@ services:
       - default
       - databases
     expose:
-      - ${MYSQL_WORKBENCH_HTTP_PORT}
-      - ${MYSQL_WORKBENCH_HTTPS_PORT}
+      - ${MYSQL_WORKBENCH_HTTP_PORT:-3000}
+      - ${MYSQL_WORKBENCH_HTTPS_PORT:-3001}
     cap_add:
       - IPC_LOCK
     deploy:
@@ -119,7 +119,7 @@ services:
       traefik.http.routers.mysql-workbench.rule: "Host(`mysql-workbench.${HOST_FQDN_LOCAL}`)"
       traefik.http.routers.mysql-workbench.tls: true
       traefik.http.routers.mysql-workbench.tls.certresolver: production
-      traefik.http.services.mysql-workbench.loadbalancer.server.port: ${MYSQL_WORKBENCH_HTTP_PORT}
+      traefik.http.services.mysql-workbench.loadbalancer.server.port: ${MYSQL_WORKBENCH_HTTP_PORT:-3000}
       homepage.group: Databases
       homepage.name: MySQL Workbench
       homepage.description: for MySQL and MariaDB databases
