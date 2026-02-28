@@ -11,7 +11,7 @@ services:
       - ${HOST_DATA_FOLDER}/apps/syncthing/data:/data:rw
       - ${HOST_DATA_FOLDER}/apps/syncthing/config:/config:rw
     expose:
-      - ${SYNCTHING_WEB_PORT}
+      - ${SYNCTHING_WEB_PORT:-8384}
     ports:
       - 21027:21027/udp
       - 22000:22000/udp
@@ -31,13 +31,12 @@ services:
       traefik.http.routers.syncthing.rule: "Host(`syncthing.${HOST_FQDN_LOCAL}`)"
       traefik.http.routers.syncthing.tls: true
       traefik.http.routers.syncthing.tls.certresolver: production
-      traefik.http.services.syncthing.loadbalancer.server.port: ${SYNCTHING_WEB_PORT}
+      traefik.http.services.syncthing.loadbalancer.server.port: ${SYNCTHING_WEB_PORT:-8384}
       homepage.group: System Services
       homepage.name: SyncThing
       homepage.description: Roll your own Dropbox
       homepage.icon: syncthing.png
-      homepage.instance.homenetwork.href: "https://syncthing.${HOST_FQDN_LOCAL}"
-      homepage.instance.tailscalenetwork.href: "http://syncthing.${HOST_FQDN_TAILSCALE}"
+      homepage.href: "https://syncthing.${HOST_FQDN_LOCAL}"
       glance.name: SyncThing
       glance.icon: sh:syncthing
       glance.description: File sync service
