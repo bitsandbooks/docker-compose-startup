@@ -1,13 +1,13 @@
 services:
   portainer-agent:
-    image: docker.io/portainer/agent:linux-amd64
+    image: docker.io/portainer/agent:${PORTAINER_AGENT_TAG:-linux-amd64}
     container_name: portainer-agent
     hostname: ${HOST_NAME}
     ports:
-      - ${HOST_IPV4_LOCAL}:${PORTAINER_AGENT_PORT}:9001
+      - ${HOST_IPV4_LOCAL}:${PORTAINER_AGENT_PORT:-9001}:9001
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/volumes:/var/lib/docker/volumes
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /var/lib/docker/volumes:/var/lib/docker/volumes:rw
     deploy:
       resources:
         limits:
@@ -20,10 +20,8 @@ services:
       com.nihilsum.class: composed
       "com.nihilsum.service:startup": true
       io.containers.autoupdate: registry
-      glance.name: "Portainer Agent @ ganesha"
-      glance.parent: Portainer
   portainer-server:
-    image: docker.io/portainer/portainer-ce:linux-amd64
+    image: docker.io/portainer/portainer-ce:${PORTAINER_SERVER_TAG:-linux-amd64}
     container_name: portainer-server
     hostname: ${HOST_NAME}
     security_opt:
@@ -51,7 +49,7 @@ services:
       traefik.http.routers.portainer-server.rule: "Host(`portainer.${HOST_FQDN_LOCAL}`)"
       traefik.http.routers.portainer-server.tls: true
       traefik.http.routers.portainer-server.tls.certresolver: production
-      traefik.http.services.portainer-server.loadbalancer.server.port: ${PORTAINER_SERVER_PORT}
+      traefik.http.services.portainer-server.loadbalancer.server.port: ${PORTAINER_SERVER_PORT:-9000}
       homepage.group: System Services
       homepage.name: Portainer
       homepage.description: Container management
@@ -59,7 +57,7 @@ services:
       homepage.href: "https://portainer.${HOST_FQDN_LOCAL}"
       homepage.widget.type: portainer
       homepage.widget.url: https://portainer-server:9443
-      homepage.widget.env: ${PORTAINER_WIDGET_ENVIRONMENT_ID}
+      homepage.widget.env: ${PORTAINER_WIDGET_ENVIRONMENT_ID:-1}
       homepage.widget.key: ${PORTAINER_WIDGET_KEY}
       glance.name: Portainer
       glance.description: Container management
