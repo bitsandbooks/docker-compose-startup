@@ -12,13 +12,13 @@ services:
       - ${HOST_DATA_FOLDER}:/var/local:ro # [optional] mount local paths you want to back up.
       - ${HOST_DATA_FOLDER}/backups/mnt:/mnt:rw
     environment:
-      BACKREST_PORT: ${BACKREST_WEB_PORT} # default 9898
+      BACKREST_PORT: ${BACKREST_WEB_PORT:-9898} # default 9898
       BACKREST_DATA: /data # path for backrest data. restic binary and the database are placed here.
       BACKREST_CONFIG: /config/config.json # path for the backrest config file.
       XDG_CACHE_HOME: /cache # path for the restic cache which greatly improves performance.
       TZ: ${HOST_TIME_ZONE} # set the timezone for the container, used as the timezone for cron jobs.
     expose:
-      - ${BACKREST_WEB_PORT}
+      - ${BACKREST_WEB_PORT:-9898}
     deploy:
       resources:
         limits:
@@ -33,7 +33,7 @@ services:
       traefik.http.routers.backrest.rule: Host(`backrest.${HOST_FQDN_LOCAL}`)
       traefik.http.routers.backrest.tls: true
       traefik.http.routers.backrest.tls.certresolver: production
-      traefik.http.services.backrest.loadbalancer.server.port: ${BACKREST_WEB_PORT}
+      traefik.http.services.backrest.loadbalancer.server.port: ${BACKREST_WEB_PORT:-9898}
       homepage.group: System Services
       homepage.name: Backrest
       homepage.description: Restic backup tool
