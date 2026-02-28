@@ -1,6 +1,6 @@
 services:
   syncthing:
-    image: lscr.io/linuxserver/syncthing:amd64-latest
+    image: lscr.io/linuxserver/syncthing:${SYNCTHING_IMAGE_VERSION:-amd64-latest}
     container_name: syncthing
     hostname: ${HOST_NAME}
     environment:
