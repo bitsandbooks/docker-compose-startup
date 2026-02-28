@@ -42,10 +42,14 @@ services:
       - homepage.icon=plex.png
       - homepage.href=https://app.plex.tv/
       - homepage.description=Roll your own Netflix
-      - homepage.widget.type=tautulli
-      - homepage.widget.url=http://tautulli:${TAUTULLI_WEB_PORT:-8181}/tautulli
-      - homepage.widget.key=${TAUTULLI_API_KEY:-11112222333344445555666677778888}
-      - homepage.weight=400
+      # To enable stats widget for Plex on Homepage:
+      # Get an API key from Tautulli, set the TAUTULLI_API_KEY var in your 
+      # docker-compose.env file, uncomment the following lines, and bring the 
+      # whole stack down and up again.
+      # - homepage.widget.type=tautulli
+      # - homepage.widget.url=http://tautulli:${TAUTULLI_WEB_PORT:-8181}/tautulli
+      # - homepage.widget.key=${TAUTULLI_API_KEY}
+      # - homepage.weight=400
   tautulli:
     container_name: tautulli
     depends_on:
