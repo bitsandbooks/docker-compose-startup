@@ -50,8 +50,9 @@ valid config files for services in place, should make the stack work.
 
 ### `HOST_DATA_FOLDER`
 
-This folder is where stateful data lives for your services. Major sections 
-include:
+This folder is where stateful data lives for your services. It should exist and 
+be owned by the same user/group combination as in the service unit file. Major 
+sections include:
 
 - `apps` is for named service folders, inside each of which are sub-folders for
   configuration, data, logs, etc. 
