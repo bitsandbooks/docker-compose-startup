@@ -12,7 +12,7 @@ services:
       - ${HOST_DATA_FOLDER}:/var/local:ro # [optional] mount local paths you want to back up.
       - ${HOST_DATA_FOLDER}/backups/mnt:/mnt:rw
     environment:
-      BACKREST_PORT: ${BACKREST_WEB_PORT:-9898} # default 9898
+      BACKREST_PORT: ${BACKREST_WEB_PORT:-9898}
       BACKREST_DATA: /data # path for backrest data. restic binary and the database are placed here.
       BACKREST_CONFIG: /config/config.json # path for the backrest config file.
       XDG_CACHE_HOME: /cache # path for the restic cache which greatly improves performance.
