@@ -5,9 +5,9 @@ Provides an easy-to-extend stack of services via Docker Compose.
 ## Requirements
 
 - Docker and Docker Compose installed
-- a group (such as `valleylodge`), as well as its GID
-- a user (such as `torgo`), as well as their UID, whose primary group is
-  `valleylodge` and who is also a member of the `docker` group
+- a group (such as `valleylodge`), as well as its GID (such as `1000`)
+- a user (such as `torgo`), as well as their UID (such as `1000`), whose 
+  primary group is `valleylodge` and who is also a member of the `docker` group.
 
 ## Usage
 
@@ -17,11 +17,13 @@ and press Enter. To bring it down manually, use `docker compose --file
 /path/to/docker-compose.yml --env-file /path/to/docker-compose.env down`.
 
 The repo also includes a [`systemd.service(5)`][svcunit] unit file, for bringing
-the stack up and down automatically with a Linux host. Just change the paths in
-the unit file to point to your compose and env files, change the user and group,
-put the file in `/etc/systemd/system`, reload systemd with `systemctl 
-daemon-reload`, and activate it with `systemctl enable --now 
-docker-compose-startup.service`.
+the stack up and down automatically with a Linux host. To use it:
+
+1. Change the paths in the unit file to point to your compose and env files.
+2. Change the user and group.
+3. Put the file in `/etc/systemd/system`.
+4. Reload systemd with `systemctl daemon-reload`.
+5. Activate it with `systemctl enable --now docker-compose-startup.service`.
 
 [svcunit]: https://www.freedesktop.org/software/systemd/man/251/systemd.service.html
 
@@ -38,7 +40,7 @@ valid config files for services in place, should make the stack work.
 - `HOST_DATA_FOLDER`: The folder or mount on the host machine in which stateful
   data lives. See below for more info. Default: `/var/local/trunk`
 - `HOST_FQDN_LOCAL`: The domain name at which the host system can be found on
-  the LAN. Default: `hostname.zone.domain.tld` (or `hostname.localdomain`)
+  the LAN. Default: `hostname.zone.example.com`
 - `HOST_GROUP_NAME`: The primary group name, used for the default network name.
   Default: `valleylodge`
 - `HOST_IPV4_LOCAL`: The IP address of the host machine on the LAN. Default:
@@ -53,8 +55,8 @@ include:
 
 - `apps` is for named service folders, inside each of which are sub-folders for
   configuration, data, logs, etc. 
-- `backups` is for backup data, such as snapshots of databases, or [restic][] or
-  [borg][] repositories.
+- `backups` is for backup data, such as snapshots of databases, Time Machine
+  shares, [restic][] or [borg][] repositories, etc.
 - `databases` is for "hot" database data, the equivalent of folders like 
   `/var/lib/mysql` or `/var/lib/postgresql`.
 - `secrets` is for passwords, tokens, certificates, etc. For
