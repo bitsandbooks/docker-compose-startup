@@ -4,7 +4,7 @@ secrets:
     # certificates for the local network, we need a DO API token (available at
     # https://cloud.digitalocean.com/account/api/tokens ), which is stored in a
     # special "secrets" mount (such as a LUKS volume)
-    file: "${HOST_DATA_FOLDER}/secrets/${TRAEFIK_ACME_TOKEN_FILE}"
+    file: "${HOST_DATA_FOLDER}/secrets/${TRAEFIK_ACME_TOKEN_FILE:-traefik-acme-token.txt}"
 services:
   traefik:
     image: traefik:3
@@ -35,14 +35,14 @@ services:
       homepage.group: Top Services
       homepage.name: Traefik Dashboard
       homepage.icon: traefik.png
-      homepage.href: "${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT}"
+      homepage.href: "https://${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT:-8080}/"
       homepage.description: Reverse proxy
       homepage.widget.type: traefik
-      homepage.widget.url: http://traefik:8080
+      homepage.widget.url: http://traefik:${TRAEFIK_DASHBOARD_PORT:-8080}
       glance.name: Traefik Dashboard
       glance.description: Reverse proxy
       glance.icon: sh:traefik
-      glance.url: ${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT}
+      glance.url: ${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT:-8080}
     deploy:
       resources:
         limits:
