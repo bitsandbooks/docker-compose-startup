@@ -7,7 +7,7 @@ secrets:
     file: "${HOST_DATA_FOLDER}/secrets/${TRAEFIK_ACME_TOKEN_FILE:-traefik-acme-token.txt}"
 services:
   traefik:
-    image: traefik:3
+    image: traefik:${TRAEFIK_IMAGE_VERSION:-3}
     container_name: traefik
     security_opt:
       - no-new-privileges:true

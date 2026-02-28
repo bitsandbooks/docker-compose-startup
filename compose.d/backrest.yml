@@ -2,7 +2,7 @@ volumes:
   backrest_cache:
 services:
   backrest:
-    image: docker.io/garethgeorge/backrest:latest
+    image: docker.io/garethgeorge/backrest:${BACKREST_IMAGE_TAG:-latest}
     container_name: backrest
     volumes:
       - backrest_cache:/cache

@@ -159,7 +159,7 @@ services:
       glance.name: Postgres server
       glance.parent: Databases
   pgadmin:
-    image: docker.io/dpage/pgadmin4:8
+    image: docker.io/dpage/pgadmin4:${PGADMIN_IMAGE_TAG:-8}
     container_name: pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: "${POSTGRES_USER}@${HOST_GROUP_NAME}.com"

@@ -1,6 +1,6 @@
 services:
   dns:
-    image: ubuntu/bind9:latest
+    image: ubuntu/bind9:${BIND9_IMAGE_VERSION:-latest}
     container_name: dns
     environment:
       - BIND9_USER=${BIND9_USER:-root}
