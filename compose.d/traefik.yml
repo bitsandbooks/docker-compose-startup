@@ -7,29 +7,29 @@ secrets:
     file: "${HOST_DATA_FOLDER}/secrets/${TRAEFIK_ACME_TOKEN_FILE:-traefik-acme-token.txt}"
 services:
   traefik:
-    image: traefik:${TRAEFIK_IMAGE_VERSION:-3}
+    depends_on:
+      - docker-proxy
+    image: "traefik:${TRAEFIK_IMAGE_VERSION:-3}"
     container_name: traefik
     security_opt:
-      - no-new-privileges:true
+      - "no-new-privileges:true"
     secrets:
       - DO_AUTH_TOKEN
     environment:
-      # Which format?
-      DO_AUTH_TOKEN_FILE: /run/secrets/DO_AUTH_TOKEN
-      DO_AUTH_TOKEN__FILE: /run/secrets/DO_AUTH_TOKEN
+      # TODO: Which format?
+      - "DO_AUTH_TOKEN_FILE=/run/secrets/DO_AUTH_TOKEN"
+      - "DO_AUTH_TOKEN__FILE=/run/secrets/DO_AUTH_TOKEN"
     expose:
-      - 8080 # Dashboard
+      - "${TRAEFIK_DASHBOARD_PORT:-8080}" # -- Dashboard
     ports:
-      - ${HOST_IPV4_LOCAL}:80:80 # HTTP (LAN)
-      - ${HOST_IPV4_LOCAL}:443:443 # HTTPS (LAN)
+      - "${HOST_IPV4_LOCAL}:80:80" # -- HTTP
+      - "${HOST_IPV4_LOCAL}:443:443" # -- HTTPS
     volumes:
-      - ${HOST_DATA_FOLDER}/apps/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
-      - ${HOST_DATA_FOLDER}/apps/traefik/logs:/var/log/traefik:rw # for logs
-      - ${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites:ro # for File provider
-      - ${HOST_DATA_FOLDER}/secrets/traefik-acme.json:/etc/traefik/certs/acme.json:rw # for Let's Encrypt certificates
-      - /var/run/docker.sock:/var/run/docker.sock:ro # for Docker provider
-    # depends_on:
-    #   - docker-proxy
+      - "${HOST_DATA_FOLDER}/apps/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro" # -- config file
+      - "${HOST_DATA_FOLDER}/apps/traefik/logs:/var/log/traefik:rw" # -- for logs
+      - "${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites.d:ro" # -- for File provider
+      - "${HOST_DATA_FOLDER}/secrets/traefik/certs:/etc/traefik/certs:rw" # -- for Let's Encrypt certificates
+      - "${HOST_DATA_FOLDER}/secrets/traefik/live:/etc/traefik/live:rw" # -- (optional) for .pem files
     labels:
       - "com.nihilsum.class=composed"
       - "com.nihilsum.service:startup=true"
@@ -48,5 +48,5 @@ services:
           cpus: "${TRAEFIK_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
           memory: "${TRAEFIK_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 10
