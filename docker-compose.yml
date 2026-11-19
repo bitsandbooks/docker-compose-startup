@@ -26,8 +26,8 @@ include:
 
   # -- Essential services; do not comment out or disable!
   - path:     ${HOST_COMPOSE_FOLDER}/docker-proxy.yml # -- Allows read-only access to the Docker socket, for use with Traefik and other services
-  - path:     ${HOST_COMPOSE_FOLDER}/dns.yml # -- Local network DNS server (Technitium) for LAN and optional DoH/DoT
-  - path:     ${HOST_COMPOSE_FOLDER}/traefik.yml # -- Reverse proxy (Traefik) for LAN and optional DoH/DoT
+  - path:     ${HOST_COMPOSE_FOLDER}/dns.yml # -- DNS services for LAN
+  - path:     ${HOST_COMPOSE_FOLDER}/traefik.yml # -- Reverse proxy services for the LAN
 
   # -- Optional services below. Comment out to disable.
   - path:     ${HOST_COMPOSE_FOLDER}/databases.yml

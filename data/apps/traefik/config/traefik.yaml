@@ -1,0 +1,158 @@
+## STATIC CONFIG (restart Traefik to apply)
+
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# Provider documentation: https://doc.traefik.io/traefik/providers/docker/#provider-configuration
+providers:
+  docker:
+    # -- (Optional) Enable this, if you want to expose all containers automatically
+    # Uses docker-proxy service to give Traefik limited access to the Docker socket
+    exposedByDefault: false
+    watch: true
+    endpoint: tcp://docker-proxy:2375
+    defaultRule: "Host(`{{ normalize .Name }}.docker.localhost`)"
+  file:
+    # -- (Optional) Enable this, if you want to use a file provider for Traefik
+    directory: /etc/traefik/sites.d
+    watch: true
+
+# -- (Optional) Change Log Level and Format here...
+#     - loglevels [DEBUG, INFO, WARNING, ERROR, CRITICAL]
+#     - format [common, json, logfmt]
+log:
+ level: INFO
+#  format: common
+#  filePath: /var/log/traefik/traefik.log
+# -- (Optional) Enable Accesslog and change Format here...
+#     - format [common, json, logfmt]
+accesslog:
+  format: common
+#   filePath: /var/log/traefik/access.log
+
+# -- (Optional) Enable API and Dashboard here, don't do in production
+api:
+  dashboard: true
+  disableDashboardAd: true
+  # insecure: true
+
+# -- Change EntryPoints here...
+entryPoints:
+  # tftp:
+  #   # for Netboot.XYZ container
+  #   address: :69
+  web:
+    address: ":80"
+    forwardedHeaders:
+      trustedIPs:
+        - 127.0.0.1/32 # localhost
+        # -- (Optional) Add your LAN and Docker subnet(s) here, to allow Traefik to trust forwarded headers from the LAN
+        - 172.18.0.0/24
+        - 172.99.0.0/16
+    # -- (Optional) Redirect all HTTP to HTTPS
+    # http:
+    #   redirections:
+    #     entryPoint:
+    #       to: websecure
+    #       scheme: https
+  websecure:
+    address: ":443"
+    http:
+      # tls:
+      #   # -- (Optional) Enable TLS and configure your CertificateResolver here to set a TLS certificate for this entire entrypoint
+      #   certresolver: production
+      #   domains:
+      #     - main: zone.example.com
+      #       sans: "*.zone.example.com"
+  wg-mullvad:
+    address: :51820
+  docker-socket:
+    address: :2375
+  docker-registry:
+    address: :5000
+  # squid:
+  #   address: :3128
+
+certificatesResolvers:
+  prod-letsencrypt:
+    acme:
+      email: torgo@example.com
+      storage: /etc/traefik/certs/acme-prod-letsencrypt.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: digitalocean
+        delayBeforeCheck: 30s
+        resolvers:
+          - "1.1.1.1:53" # Cloudflare DNS
+          - "9.9.9.9:53" # Quad9 DNS
+          - "8.8.8.8:53" # Google DNS
+  staging-letsencrypt:
+    acme:
+      email: torgo@example.com
+      storage: /etc/traefik/certs/acme-staging-letsencrypt.json
+      caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: digitalocean
+        delayBeforeCheck: 60s
+        resolvers:
+          - "1.1.1.1:53" # Cloudflare DNS
+          - "9.9.9.9:53" # Quad9 DNS
+          - "8.8.8.8:53" # Google DNS
+  tailscale:
+    tailscale: {}
+
+## DYNAMIC CONFIG
+
+# -- (Optional) Disable TLS Cert verification check
+# serversTransport:
+#   insecureSkipVerify: true
+
+# -- (Optional) Overwrite Default Certificates
+tls:
+  options:
+    default:
+      # -- (Optional) Disable TLS version 1.0 and 1.1
+      minVersion: VersionTLS12
+      cipherSuites:
+        # see https://godoc.org/crypto/tls#pkg-constants
+        # TLS <= 1.2
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
+        # TLS >= 1.3
+        - TLS_AES_128_GCM_SHA256
+        - TLS_AES_256_GCM_SHA384
+        - TLS_CHACHA20_POLY1305_SHA256
+      curvePreferences:
+        # see https://godoc.org/crypto/tls#CurveID
+        - X25519
+        - CurveP521
+        - CurveP384
+      sniStrict: true
+  stores:
+    default:
+      defaultCertificate:
+        certFile: /etc/letsencrypt/live/manos.zone.example.com/fullchain.pem
+        keyFile: /etc/letsencrypt/live/manos.zone.example.com/privkey.pem
+  certificates:
+    - certFile: /etc/letsencrypt/live/manos.zone.example.com/fullchain.pem
+      keyFile: /etc/letsencrypt/live/manos.zone.example.com/privkey.pem
+
+# -- (Optional) Overwrite Default Certificates
+# tls:
+#   certificates:
+#     - certFile: /etc/traefik/certs/fullchain.crt
+#       keyFile: /etc/traefik/certs/cert.key
+#       stores:
+#         - default
+#   stores:
+#     default:
+#       defaultCertificate:
+#         certFile: /etc/traefik/certs/fullchain.crt
+#         keyFile: /etc/traefik/certs/cert.key
+#   options:
+#     default:
+#       # -- (Optional) Disable TLS version 1.0 and 1.1
+#       minVersion: VersionTLS12
