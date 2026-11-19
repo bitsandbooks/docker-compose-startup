@@ -1,28 +1,72 @@
+# Requirements:
+#   - Traefik reverse proxy (for the DNS web console and optional DoH/DoT)
+# Optional:
+#   - Postgres database (optional, for storing DNS records in a database instead of
+#     local files)
+# For complete options, see: https://github.com/TechnitiumSoftware/DnsServer/blob/master/docker-compose.yml
+
 services:
   dns:
-    image: ubuntu/bind9:${BIND9_IMAGE_VERSION:-latest}
-    container_name: dns
+    image: technitium/dns-server:${TECHNITIUM_IMAGE_VERSION:-latest}
+    container_name: technitium-dns
+    hostname: "${TECHNITIUM_HOSTNAME:-ns1}"
     environment:
-      - BIND9_USER=${BIND9_USER:-root}
-      - TZ=${HOST_TIME_ZONE}
+      - "TZ=${HOST_TIME_ZONE}"
+      - "DNS_SERVER_DOMAIN=${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}"
+      # - "DNS_SERVER_PASSWORD=${TECHNITIUM_DEFAULT_PASSWORD:-Is-just-1-REALLY-secure-password-2-much-2-ask-for}" # -- (optional) Set admin password on first boot using environment variable
+      # - "DNS_SERVER_ADMIN_PASSWORD_FILE=${HOST_DATA_FOLDER}/secrets/technitium-password.txt" # -- (optional) Set admin password on first boot using plaintext file
+      # - "DNS_SERVER_FORWARDERS=1.1.1.1,8.8.8.8,9.9.9.9" # -- (optional) Comma separated list of upstream DNS servers.
+    sysctls:
+      - "net.ipv4.ip_local_port_range=1024 65535" # -- (optional) remove when using "host" network mode
     volumes:
-      - ${HOST_DATA_FOLDER}/apps/bind9/config:/etc/bind
-      - ${HOST_DATA_FOLDER}/apps/bind9/cache:/var/cache/bind
-      - ${HOST_DATA_FOLDER}/apps/bind9/records:/var/lib/bind
+      - "${HOST_DATA_FOLDER}/apps/technitium/config:/etc/dns:rw"
+      - "${HOST_DATA_FOLDER}/apps/technitium/logs:/var/log/technitium/dns:rw"
+    # -- For DHCP deployments, use "host" network mode and remove all the port mappings, including the ports array
+    # network_mode: "host"
+    networks:
+      - default
+      # - databases # -- (optional) for Postgres connectivity
     ports:
-      - ${HOST_IPV4_LOCAL}:53:53/tcp
-      - ${HOST_IPV4_LOCAL}:53:53/udp
-      - 127.0.0.1:53:53/tcp
-      - 127.0.0.1:53:53/udp
+      # Technitium needs to "own" port 53
+      - 53:53/tcp           # -- DNS service (TCP)
+      - 53:53/udp           # -- DNS service (UDP)
+      # - "67:67/udp"       # -- (optional) DHCP service
+      # - "80:80/tcp"       # -- (optional) DNS-over-HTTP service (for use with reverse proxy or certbot renewal)
+      # - "443:443/udp"     # -- (optional) DNS-over-HTTPS service (HTTP/3)
+      # - "443:443/tcp"     # -- (optional) DNS-over-HTTPS service (HTTP/1.1, HTTP/2)
+      # - "853:853/udp"     # -- (optional) DNS-over-QUIC service
+      # - "853:853/tcp"     # -- (optional) DNS-over-TLS service
+      # - "8053:8053/tcp"   # -- (optional) DNS-over-HTTP service (for use with reverse proxy)
+    expose:
+      - "5380/tcp"          # -- DNS web console (HTTP)
+      # - "53443:53443/tcp" # -- (optional) DNS web console (HTTPS)
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 1G
+          cpus: "${TRAEFIK_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${TRAEFIK_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 10
     labels:
-      io.containerss.autoupdate: registry
-      glance.name: DNS server
-      glance.icon: sh:bind-9
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
+      - "io.containers.autoupdate=registry"
+      - "traefik.enable=true"
+      - "traefik.http.services.technitium-dns.loadbalancer.server.port=5380"
+      - "traefik.http.routers.technitium-dns.entrypoints=websecure"
+      - "traefik.http.routers.technitium-dns.rule=Host(`${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.technitium-dns.tls=true"
+      - "traefik.http.routers.technitium-dns.tls.certresolver=production"
+      - "traefik.http.routers.technitium-dns.tls.domains[0].main=${DNS_ZONE_LOCAL}"
+      - "traefik.http.routers.technitium-dns.tls.domains[0].sans=*.${DNS_ZONE_LOCAL}"
+      - "homepage.group=Network Services"
+      - "homepage.name=Technitium DNS: ${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}"
+      - "homepage.icon=sh-nametag.svg"
+      - "homepage.instance.homenetwork.href=https://${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}"
+      - "homepage.description=Name server 1 for the LAN"
+      - "homepage.weight=10"
+      - "homepage.widget.type=technitium"
+      - "homepage.widget.url=http://technitium-dns:5380"
+      - "homepage.widget.key=${TECHNITIUM_HOMEPAGE_WIDGET_KEY:-0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF}"
