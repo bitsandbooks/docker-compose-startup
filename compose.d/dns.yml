@@ -28,8 +28,8 @@ services:
       # - databases # -- (optional) for Postgres connectivity
     ports:
       # Technitium needs to "own" port 53
-      - 53:53/tcp           # -- DNS service (TCP)
-      - 53:53/udp           # -- DNS service (UDP)
+      - 53:53/tcp           # -- (required) DNS service (TCP)
+      - 53:53/udp           # -- (required) DNS service (UDP)
       # - "67:67/udp"       # -- (optional) DHCP service
       # - "80:80/tcp"       # -- (optional) DNS-over-HTTP service (for use with reverse proxy or certbot renewal)
       # - "443:443/udp"     # -- (optional) DNS-over-HTTPS service (HTTP/3)
@@ -38,7 +38,7 @@ services:
       # - "853:853/tcp"     # -- (optional) DNS-over-TLS service
       # - "8053:8053/tcp"   # -- (optional) DNS-over-HTTP service (for use with reverse proxy)
     expose:
-      - "5380/tcp"          # -- DNS web console (HTTP)
+      - "${TECHNITIUM_HTTP_CONSOLE_PORT:-5380}/tcp" # -- DNS web console (HTTP)
       # - "53443:53443/tcp" # -- (optional) DNS web console (HTTPS)
     deploy:
       resources:
@@ -68,5 +68,5 @@ services:
       - "homepage.description=Name server 1 for the LAN"
       - "homepage.weight=10"
       - "homepage.widget.type=technitium"
-      - "homepage.widget.url=http://technitium-dns:5380"
+      - "homepage.widget.url=http://technitium-dns:${TECHNITIUM_HTTP_CONSOLE_PORT:-5380}"
       - "homepage.widget.key=${TECHNITIUM_HOMEPAGE_WIDGET_KEY:-0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF}"
