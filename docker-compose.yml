@@ -3,12 +3,12 @@ name: ${PROJECT_NAME}
 networks:
   default:
     name: ${HOST_GROUP_NAME}
-    # external: true # If network already exists, use this and comment out the rest
-    # For specific subnets, use or modify the configuration below
+    # external: true # -- If network already exists, use this and comment out the rest
+    # -- For specific subnets, use or modify the configuration below
     driver: bridge
     attachable: true
-    # internal: true # OPTIONAL: If Internet access is unneeded for this network
-    enable_ipv6: false # OPTIONAL: affects IPv6 subnet line below
+    # internal: true # -- (optional) If Internet access is unneeded for this network
+    enable_ipv6: false # -- (optional) affects IPv6 subnet line below
     # ipam:
     #   # for defining specific network ranges
     #   config:
@@ -17,10 +17,10 @@ networks:
     #     - subnet: fe80:db8::/64
 
 include:
-  # # Include service files listed in ${HOST_COMPOSE_FOLDER} below to launch
-  # # them when Docker becomes available on startup, using the same pattern as
-  # # in the example below. If a service does not require an env_file, simply
-  # # leave that line out.
+  # -- Include service files listed in ${HOST_COMPOSE_FOLDER} below to launch
+  #    them when Docker becomes available on startup, using the same pattern as
+  #    in the example below. If a service does not require an env_file, simply
+  #    leave that line out.
   # - path:     ${HOST_COMPOSE_FOLDER}/servicename.yml
   #   env_file: ${HOST_COMPOSE_FOLDER}/servicename.env
 
