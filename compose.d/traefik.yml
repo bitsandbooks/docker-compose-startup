@@ -31,23 +31,22 @@ services:
     # depends_on:
     #   - docker-proxy
     labels:
-      io.containers.autoupdate: registry
-      homepage.group: Top Services
-      homepage.name: Traefik Dashboard
-      homepage.icon: traefik.png
-      homepage.href: "https://${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT:-8080}/"
-      homepage.description: Reverse proxy
-      homepage.widget.type: traefik
-      homepage.widget.url: http://traefik:${TRAEFIK_DASHBOARD_PORT:-8080}
-      glance.name: Traefik Dashboard
-      glance.description: Reverse proxy
-      glance.icon: sh:traefik
-      glance.url: ${HOST_FQDN_LOCAL}:${TRAEFIK_DASHBOARD_PORT:-8080}
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
+      - "io.containers.autoupdate=registry"
+      - "homepage.group=Top Services"
+      - "homepage.name=Traefik Dashboard"
+      - "homepage.icon=traefik.png"
+      - "homepage.href=https://${HOST_NAME}.${DNS_ZONE_LOCAL}:${TRAEFIK_DASHBOARD_PORT:-8080}/"
+      - "homepage.description=Dashboard for ${HOST_NAME}'s reverse proxy"
+      - "homepage.widget.type=traefik"
+      - "homepage.widget.url=http://traefik:${TRAEFIK_DASHBOARD_PORT:-8080}"
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 1G
+          cpus: "${TRAEFIK_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${TRAEFIK_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: on-failure
         max_attempts: 10
