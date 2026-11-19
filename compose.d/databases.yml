@@ -7,264 +7,262 @@ networks:
     name: databases # ...and put its name here
 services:
   minio:
-    image: docker.io/minio/minio:${MINIO_IMAGE_TAG:-RELEASE.2025-04-22T22-12-26Z}
-    container_name: minio
+    image: "docker.io/minio/minio:${MINIO_IMAGE_TAG:-RELEASE.2025-04-22T22-12-26Z}"
+    container_name: "minio"
     command: "server --console-address ':${MINIO_LISTEN_PORT:-9000}' /data"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      - "MINIO_ROOT_USER=${MINIO_ROOT_USER}"
+      - "MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}"
     volumes:
-      - ${HOST_DATA_FOLDER}/apps/minio/data:/data
+      - "${HOST_DATA_FOLDER}/apps/minio/data:/data"
     expose:
-      - ${MINIO_DASHBOARD_PORT:-9015}
+      - "${MINIO_DASHBOARD_PORT:-9015}"
     networks:
-      - default
-      - databases
+      - "default"
+      - "databases"
     ports:
-      - ${MINIO_LISTEN_PORT:-9000}:${MINIO_LISTEN_PORT:-9000}
+      - "${MINIO_LISTEN_PORT:-9000}:${MINIO_LISTEN_PORT:-9000}"
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 1G
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-    labels:
-      io.containers.autoupdate: registry
-      traefik.enable: true
-      traefik.http.routers.minio.entrypoints: websecure
-      traefik.http.routers.minio.rule: "Host(`minio.${HOST_FQDN_LOCAL}`)"
-      traefik.http.routers.minio.tls: true
-      traefik.http.routers.minio.tls.certresolver: production
-      traefik.http.services.minio.loadbalancer.server.port: ${MINIO_DASHBOARD_PORT:-9015}
-      homepage.group: Databases
-      homepage.name: MinIO
-      homepage.href: "https://minio.${HOST_FQDN_LOCAL}/browser"
-      homepage.description: S3-compatible object store
-      homepage.icon: minio.png
-      glance.name: MinIO
-      glance.description: S3-compatible object store
-      glance.url: "https://minio.${HOST_FQDN_LOCAL}/browser"
-      glance.icon: sh:minio-light
-      glance.parent: Databases
-  mariadb:
-    image: docker.io/library/mariadb:${MARIADB_IMAGE_TAG:-lts}
-    container_name: mariadb
-    volumes:
-      # - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/config:/etc/mysql/conf.d:ro
-      - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/data:/var/lib/mysql:rw
-      - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/log:/var/log/mysql:rw
-      - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/run:/var/run/mysqld:rw
-      - ${HOST_DATA_FOLDER}/backups/databases:/media:ro
-      # - ${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/initdb.d:/docker-entrypoint-initdb.d:ro
-    environment:
-      MARIADB_ROOT_PASSWORD: "${MARIADB_ROOT_PASSWORD}"
-      MARIADB_USER: "${MARIADB_USER}"
-      MARIADB_PASSWORD: "${MARIADB_PASSWORD}"
-    networks:
-      - default
-      - databases
-    ports:
-      - ${MARIADB_PORT:-3306}:${MARIADB_PORT:-3306}
-    deploy:
-      resources:
-        limits:
-          cpus: "2.0"
-          memory: 1G
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-    labels:
-      com.nihilsum.class: composed
-      "com.nihilsum.service:base": true
-      "com.nihilsum.service:startup": true
-      io.containers.autoupdate: registry
-  mysql-workbench:
-    image: lscr.io/linuxserver/mysql-workbench:latest
-    container_name: mysql-workbench
-    depends_on:
-      - mysql
-    devices:
-      - /dev/dri:/dev/dri # intel quicksync (optional)
-    environment:
-      PUID: ${MYSQL_WORKBENCH_UID:-135}
-      PGID: ${MYSQL_WORKBENCH_GID:-144}
-      TZ: ${HOST_TIME_ZONE}
-    volumes:
-      - ${HOST_DATA_FOLDER}/apps/mysql-workbench/config:/config
-      # - /var/run/mysqld/mysqld.sock:/config/mysqld.sock
-      # - ${HOST_DATA_FOLDER}/databases/mysql/run/mysqld.sock:/config/mysqld.sock
-      - ${HOST_DATA_FOLDER}/backups/databases:/media:rw
-    networks:
-      - default
-      - databases
-    expose:
-      - ${MYSQL_WORKBENCH_HTTP_PORT:-3000}
-      - ${MYSQL_WORKBENCH_HTTPS_PORT:-3001}
-    cap_add:
-      - IPC_LOCK
-    deploy:
-      resources:
-        limits:
-          cpus: "2.0"
-          memory: 1G
+          memory: "1G"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
     labels:
-      io.containers.autoupdate: registry
-      traefik.enable: true
-      traefik.http.routers.mysql-workbench.entrypoints: websecure
-      traefik.http.routers.mysql-workbench.rule: "Host(`mysql-workbench.${HOST_FQDN_LOCAL}`)"
-      traefik.http.routers.mysql-workbench.tls: true
-      traefik.http.routers.mysql-workbench.tls.certresolver: production
-      traefik.http.services.mysql-workbench.loadbalancer.server.port: ${MYSQL_WORKBENCH_HTTP_PORT:-3000}
-      homepage.group: Databases
-      homepage.name: MySQL Workbench
-      homepage.description: for MySQL and MariaDB databases
-      homepage.href: https://mysql-workbench.${HOST_FQDN_LOCAL}
-      homepage.icon: mysql.png
-      glance.name: MySQL Workbench
-      glance.description: MySQL database
-      glance.url: https://mysql-workbench.${HOST_FQDN_LOCAL}
-      glance.icon: si:mysql
-      glance.parent: Databases
-      glance.id: MySQLWorkbench
+      - "io.containers.autoupdate=registry"
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
+      - "traefik.enable=true"
+      - "traefik.http.services.minio.loadbalancer.server.port=${MINIO_DASHBOARD_PORT:-9015}"
+      - "traefik.http.routers.minio.entrypoints=websecure"
+      - "traefik.http.routers.minio.rule=Host(`minio.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.minio.tls=true"
+      - "traefik.http.routers.minio.tls.certresolver=production"
+      - "homepage.group=Databases"
+      - "homepage.name=MinIO"
+      - "homepage.href=https://minio.${HOST_NAME}.${DNS_ZONE_LOCAL}/browser"
+      - "homepage.description=S3-compatible object store"
+      - "homepage.icon=minio.png"
+  mariadb:
+    image: "docker.io/library/mariadb:${MARIADB_IMAGE_TAG:-lts}"
+    container_name: "mariadb"
+    volumes:
+      # - "${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/config:/etc/mysql/conf.d:ro"
+      - "${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/data:/var/lib/mysql:rw"
+      - "${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/log:/var/log/mysql:rw"
+      - "${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/run:/var/run/mysqld:rw"
+      - "${HOST_DATA_FOLDER}/backups/databases:/media:ro"
+      # - "${HOST_DATA_FOLDER}/databases/mariadb/${HOST_NAME}/initdb.d:/docker-entrypoint-initdb.d:ro"
+    environment:
+      - "MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD?mariadb-root-password-missing}"
+      - "MARIADB_USER=${MARIADB_USER?mariadb-user-missing}"
+      - "MARIADB_PASSWORD=${MARIADB_PASSWORD?mariadb-password-missing}"
+    networks:
+      - "default"
+      - "databases"
+    ports:
+      - "${MARIADB_PORT:-3306}:${MARIADB_PORT:-3306}"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "1G"
+      restart_policy:
+        condition: "on-failure"
+        max_attempts: 3
+    labels:
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:base=true"
+      - "com.nihilsum.service:startup=true"
+      - "io.containers.autoupdate=registry"
+  mysql-workbench:
+    image: "lscr.io/linuxserver/mysql-workbench:${MYSQL_WORKBENCH_IMAGE_TAG:-latest}"
+    container_name: "mysql-workbench"
+    depends_on:
+      - "mysql"
+    devices:
+      - "/dev/dri:/dev/dri" # -- (optional) intel quicksync
+    environment:
+      - "PUID=${MYSQL_WORKBENCH_UID:-123}" # -- (optional) for non-root user, set to your host user's UID
+      - "PGID=${MYSQL_WORKBENCH_GID:-456}" # -- (optional) for non-root user, set to your host user's GID
+      - "TZ=${HOST_TIME_ZONE}"
+    volumes:
+      - "${HOST_DATA_FOLDER}/apps/mysql-workbench/config:/config"
+      # - "/var/run/mysqld/mysqld.sock:/config/mysqld.sock"
+      # - "${HOST_DATA_FOLDER}/databases/mysql/run/mysqld.sock:/config/mysqld.sock"
+      - "${HOST_DATA_FOLDER}/backups/databases:/media:rw"
+    networks:
+      - "default"
+      - "databases"
+    expose:
+      - "${MYSQL_WORKBENCH_HTTP_PORT:-3000}"
+      - "${MYSQL_WORKBENCH_HTTPS_PORT:-3001}"
+    cap_add:
+      - "IPC_LOCK"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "1G"
+      restart_policy:
+        condition: "on-failure"
+        max_attempts: 3
+    labels:
+      - "io.containers.autoupdate=registry"
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
+      - "traefik.enable=true"
+      - "traefik.http.services.mysql-workbench.loadbalancer.server.port=${MYSQL_WORKBENCH_HTTP_PORT:-3000}"
+      - "traefik.http.routers.mysql-workbench.entrypoints=websecure"
+      - "traefik.http.routers.mysql-workbench.rule=Host(`mysql-workbench.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.mysql-workbench.tls=true"
+      - "traefik.http.routers.mysql-workbench.tls.certresolver=production"
+      - "traefik.http.routers.mysql-workbench.tls.domains[0].main=${DNS_ZONE_LOCAL}"
+      - "traefik.http.routers.mysql-workbench.tls.domains[0].sans=*.${DNS_ZONE_LOCAL}"
+      - "homepage.group=Databases"
+      - "homepage.name=MySQL Workbench"
+      - "homepage.description=for MySQL and MariaDB databases"
+      - "homepage.href=https://mysql-workbench.${HOST_NAME}.${DNS_ZONE_LOCAL}"
+      - "homepage.icon=mysql.png"
   postgresql:
-    image: docker.io/library/postgres:${POSTGRES_IMAGE_TAG:-16}
-    container_name: postgresql
+    image: "docker.io/library/postgres:${POSTGRES_IMAGE_TAG:-16}"
+    container_name: "postgresql"
     volumes:
-      - ${HOST_DATA_FOLDER}/databases/pgsql/${HOST_NAME}/data:/var/lib/postgresql/data
+      - "${HOST_DATA_FOLDER}/databases/pgsql/${HOST_NAME}/data:/var/lib/postgresql/data:rw"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      # PGDATA: /var/lib/postgresql/data
+      - "POSTGRES_USER=${POSTGRES_USER?postgres-user-missing}"
+      - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD?postgres-password-missing}"
+      # - "PGDATA=${POSTGRES_DATA_FOLDER:-/var/lib/postgresql/data}"
     networks:
-      - default
-      - databases
+      - "default"
+      - "databases"
     ports:
-      - ${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}
-    shm_size: 256mb
+      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
+    shm_size: "256mb"
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 1G
+          memory: "1G"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 3
     labels:
-      io.containers.autoupdate: registry
-      glance.name: Postgres server
-      glance.parent: Databases
+      - "io.containers.autoupdate=registry"
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
   pgadmin:
-    image: docker.io/dpage/pgadmin4:${PGADMIN_IMAGE_TAG:-8}
-    container_name: pgadmin
+    image: "docker.io/dpage/pgadmin4:${PGADMIN_IMAGE_TAG:-8}"
+    container_name: "pgadmin"
     environment:
-      PGADMIN_DEFAULT_EMAIL: "${POSTGRES_USER}@${HOST_GROUP_NAME}.com"
-      PGADMIN_DEFAULT_PASSWORD: "${POSTGRES_PASSWORD}"
-      PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
+      - "PGADMIN_DEFAULT_EMAIL=${POSTGRES_USER}@${HOST_GROUP_NAME}.com"
+      - "PGADMIN_DEFAULT_PASSWORD=${POSTGRES_PASSWORD}"
+      - "PGADMIN_LISTEN_PORT=${PGADMIN_LISTEN_PORT}"
     networks:
-      - default
-      - databases
+      - "default"
+      - "databases"
     expose:
-      - ${PGADMIN_LISTEN_PORT:-80}
+      - "${PGADMIN_LISTEN_PORT:-80}"
     volumes:
-      # - ${HOST_DATA_FOLDER}/apps/pgadmin/certs:/certs
-      # - ${HOST_DATA_FOLDER}/apps/pgadmin/config:/pgadmin4
-      - ${HOST_DATA_FOLDER}/apps/pgadmin/data:/var/lib/pgadmin
+      # - "${HOST_DATA_FOLDER}/apps/pgadmin/certs:/certs:ro"
+      # - "${HOST_DATA_FOLDER}/apps/pgadmin/config:/pgadmin4"
+      - "${HOST_DATA_FOLDER}/apps/pgadmin/data:/var/lib/pgadmin"
     depends_on:
-      - postgresql
+      - "postgresql"
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 1G
+          memory: "1G"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 3
     labels:
-      io.containers.autoupdate: registry
-      traefik.enable: true
-      traefik.http.routers.pgadmin.entrypoints: websecure
-      traefik.http.routers.pgadmin.rule: "Host(`pgadmin.${HOST_FQDN_LOCAL}`)"
-      traefik.http.routers.pgadmin.tls: true
-      traefik.http.routers.pgadmin.tls.certresolver: production
-      traefik.http.services.pgadmin.loadbalancer.server.port: ${PGADMIN_LISTEN_PORT:-80}
-      homepage.group: Databases
-      homepage.name: PGAdmin
-      homepage.description: for Postgres databases
-      homepage.href: "https://pgadmin.${HOST_FQDN_LOCAL}/browser"
-      homepage.icon: pgadmin.png
-      glance.name: PGAdmin
-      glance.description: Postgres database
-      glance.url: https://pgadmin.${HOST_FQDN_LOCAL}/browser
-      glance.icon: sh:pgadmin
-      glance.id: Postgres
-      glance.parent: Databases
-  redis:
-    image: docker.io/library/redis:${REDIS_IMAGE_TAG:-7}
-    container_name: redis
+      - "io.containers.autoupdate=registry"
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
+      - "traefik.enable=true"
+      - "traefik.http.services.pgadmin.loadbalancer.server.port=${PGADMIN_LISTEN_PORT:-80}"
+      - "traefik.http.routers.pgadmin.entrypoints=websecure"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.pgadmin.tls=true"
+      - "traefik.http.routers.pgadmin.tls.certresolver=production"
+      - "traefik.http.routers.pgadmin.tls.domains[0].main=${DNS_ZONE_LOCAL}"
+      - "traefik.http.routers.pgadmin.tls.domains[0].sans=*.${DNS_ZONE_LOCAL}"
+      - "homepage.group=Databases"
+      - "homepage.name=PGAdmin"
+      - "homepage.description=for Postgres databases"
+      - "homepage.href=https://pgadmin.${HOST_NAME}.${DNS_ZONE_LOCAL}/browser"
+      - "homepage.icon=pgadmin.png"
+  valkey:
+    image: "valkey/valkey:${VALKEY_IMAGE_TAG:-latest}"
+    container_name: "valkey"
+    command: "valkey-server --port ${REDIS_PORT:-6379} --requirepass ${VALKEY_PASSWORD?valkey-password-missing} --threads ${IO_THREADS:-1}"
     volumes:
-      - ${HOST_DATA_FOLDER}/databases/redis/${HOST_NAME}/data:/data
-      # - ${HOST_DATA_FOLDER}/databases/redis/config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - "${HOST_DATA_FOLDER}/databases/valkey/${HOST_NAME}/data:/data"
     networks:
-      - default
-      - databases
+      - "default"
+      - "databases"
     ports:
-      - ${REDIS_PORT:-6379}:${REDIS_PORT:-6379}
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+      # - "${HOST_DATA_FOLDER}/databases/redis/config/redis.conf:/usr/local/etc/redis/redis.conf:ro"
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 1G
+          memory: "1G"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 3
     labels:
-      io.containers.autoupdate: image
-      glance.name: Redis server
-      glance.parent: Databases
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:base=true"
+      - "com.nihilsum.service:startup=true"
+      - "io.containers.autoupdate=registry"
   redis-insight:
-    image: redis/redisinsight:${REDIS_INSIGHT_IMAGE_TAG:-latest}
-    container_name: redis-insight
+    image: "redis/redisinsight:${REDIS_INSIGHT_IMAGE_TAG:-latest}"
+    container_name: "redis-insight"
     depends_on:
-      - redis
-    user: ${HOST_USER_UID}:${HOST_USER_GID}
+      - "valkey"
+    user: "${HOST_USER_UID}:${HOST_USER_GID}"
     # environment:
-    #   RI_APP_HOST: redis
+    #   - "RI_APP_HOST=valkey"
     volumes:
-      - ${HOST_DATA_FOLDER}/apps/redis-insight/data:/data:rw
+      - "${HOST_DATA_FOLDER}/apps/redis-insight/data:/data:rw"
     networks:
-      - default
-      - databases
+      - "default"
+      - "databases"
     expose:
-      - ${REDIS_INSIGHT_HTTP_PORT:-5540}
+      - "${REDIS_INSIGHT_HTTP_PORT:-5540}"
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 1G
+          memory: "1G"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 3
     labels:
-      io.containers.autoupdate: registry
-      traefik.enable: true
-      traefik.http.routers.redis-insight.entrypoints: websecure
-      traefik.http.routers.redis-insight.rule: "Host(`redis-insight.${HOST_FQDN_LOCAL}`)"
-      traefik.http.routers.redis-insight.tls: true
-      traefik.http.routers.redis-insight.tls.certresolver: production
-      traefik.http.services.redis-insight.loadbalancer.server.port: ${REDIS_INSIGHT_HTTP_PORT:-5540}
-      homepage.name: Redis Insight
-      homepage.description: for Redis databases
-      homepage.icon: redis.png
-      homepage.href: "https://redis-insight.${HOST_FQDN_LOCAL}/browser"
-      homepage.group: Databases
-      glance.name: Redis Insight
-      glance.description: NoSQL database
-      glance.icon: sh:redis
-      glance.url: https://redis-insight.${HOST_FQDN_LOCAL}/browser
-      glance.id: Redis
-      glance.parent: Databases
+      - "io.containers.autoupdate=registry"
+      - "com.nihilsum.class=composed"
+      - "com.nihilsum.service:startup=true"
+      - "com.nihilsum.service:base=true"
+      - "traefik.enable=true"
+      - "traefik.http.services.redis-insight.loadbalancer.server.port=${REDIS_INSIGHT_HTTP_PORT:-5540}"
+      - "traefik.http.routers.redis-insight.entrypoints=websecure"
+      - "traefik.http.routers.redis-insight.rule=Host(`redis-insight.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.redis-insight.tls=true"
+      - "traefik.http.routers.redis-insight.tls.certresolver=production"
+      - "traefik.http.routers.redis-insight.tls.domains[0].main=${DNS_ZONE_LOCAL}"
+      - "traefik.http.routers.redis-insight.tls.domains[0].sans=*.${DNS_ZONE_LOCAL}"
+      - "homepage.name=Redis Insight"
+      - "homepage.description=for Redis databases"
+      - "homepage.icon=redis.png"
+      - "homepage.href=https://redis-insight.${HOST_NAME}.${DNS_ZONE_LOCAL}/browser"
+      - "homepage.group=Databases"
