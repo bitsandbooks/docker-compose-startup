@@ -58,13 +58,14 @@ entryPoints:
     #       scheme: https
   websecure:
     address: ":443"
-    http:
-      # tls:
-      #   # -- (Optional) Enable TLS and configure your CertificateResolver here to set a TLS certificate for this entire entrypoint
-      #   certresolver: production
-      #   domains:
-      #     - main: zone.example.com
-      #       sans: "*.zone.example.com"
+    # http:
+    #   tls:
+    #     # -- (Optional) Enable TLS and configure your CertificateResolver
+    #     #    here to set a TLS certificate for this entire entrypoint
+    #     certresolver: production
+    #     domains:
+    #       - main: zone.example.com
+    #         sans: "*.zone.example.com"
   wg-mullvad:
     address: :51820
   docker-socket:
@@ -139,20 +140,3 @@ tls:
   certificates:
     - certFile: /etc/letsencrypt/live/manos.zone.example.com/fullchain.pem
       keyFile: /etc/letsencrypt/live/manos.zone.example.com/privkey.pem
-
-# -- (Optional) Overwrite Default Certificates
-# tls:
-#   certificates:
-#     - certFile: /etc/traefik/certs/fullchain.crt
-#       keyFile: /etc/traefik/certs/cert.key
-#       stores:
-#         - default
-#   stores:
-#     default:
-#       defaultCertificate:
-#         certFile: /etc/traefik/certs/fullchain.crt
-#         keyFile: /etc/traefik/certs/cert.key
-#   options:
-#     default:
-#       # -- (Optional) Disable TLS version 1.0 and 1.1
-#       minVersion: VersionTLS12
