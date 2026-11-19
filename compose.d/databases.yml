@@ -25,8 +25,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${MINIO_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${MINIO_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
@@ -68,8 +68,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${MARIADB_CPU_LIMIT:-2.0}"
+          memory: "${MARIADB_MEMORY_LIMIT:-1G}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
@@ -105,8 +105,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${MYSQL_WORKBENCH_CPU_LIMIT:-2.0}"
+          memory: "${MYSQL_WORKBENCH_MEMORY_LIMIT:-1G}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
@@ -146,8 +146,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${POSTGRES_CPU_LIMIT:-2.0}"
+          memory: "${POSTGRES_MEMORY_LIMIT:-1G}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
@@ -177,8 +177,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${PGADMIN_CPU_LIMIT:-2.0}"
+          memory: "${PGADMIN_MEMORY_LIMIT:-1G}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
@@ -215,8 +215,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${VALKEY_CPU_LIMIT:-2.0}"
+          memory: "${VALKEY_MEMORY_LIMIT:-1G}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
@@ -243,8 +243,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${REDIS_INSIGHT_CPU_LIMIT:-2.0}"
+          memory: "${REDIS_INSIGHT_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
