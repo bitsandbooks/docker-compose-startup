@@ -30,8 +30,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${PLEX_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${PLEX_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 10
@@ -64,8 +64,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "256M"
+          cpus: "${TAUTULLI_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${TAUTULLI_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 10

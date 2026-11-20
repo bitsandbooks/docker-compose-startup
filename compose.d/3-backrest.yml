@@ -22,8 +22,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${BACKREST_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${BACKREST_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 5
