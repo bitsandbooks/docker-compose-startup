@@ -55,6 +55,7 @@ services:
       - "io.containers.autoupdate=registry"
       - "traefik.enable=true"
       - "traefik.http.services.technitium-dns.loadbalancer.server.port=5380"
+      - "traefik.http.routers.technitium-dns.service=technitium-dns"
       - "traefik.http.routers.technitium-dns.entrypoints=websecure"
       - "traefik.http.routers.technitium-dns.rule=Host(`${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}`)"
       - "traefik.http.routers.technitium-dns.tls=true"

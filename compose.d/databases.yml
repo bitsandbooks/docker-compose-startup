@@ -255,6 +255,7 @@ services:
       - "com.nihilsum.service:base=true"
       - "traefik.enable=true"
       - "traefik.http.services.redis-insight.loadbalancer.server.port=${REDIS_INSIGHT_HTTP_PORT:-5540}"
+      - "traefik.http.routers.redis-insight.service=redis-insight"
       - "traefik.http.routers.redis-insight.entrypoints=websecure"
       - "traefik.http.routers.redis-insight.rule=Host(`redis-insight.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"
       - "traefik.http.routers.redis-insight.tls=true"
