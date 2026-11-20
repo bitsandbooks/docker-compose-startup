@@ -31,3 +31,119 @@ services:
         max_attempts: 10
     labels:
       - "io.containers.autoupdate=registry"
+  dns:
+    # Requirements:
+    #   - Traefik reverse proxy (for the DNS web console and optional DoH/DoT)
+    # Optional:
+    #   - Postgres database (optional, for storing DNS records in a database instead of
+    #     local files)
+    # For complete options, see: https://github.com/TechnitiumSoftware/DnsServer/blob/master/docker-compose.yml
+    image: "technitium/dns-server:${TECHNITIUM_IMAGE_VERSION:-latest}"
+    container_name: "technitium-dns"
+    hostname: "${TECHNITIUM_HOSTNAME:-ns1}"
+    environment:
+      - "TZ=${HOST_TIME_ZONE}"
+      - "DNS_SERVER_DOMAIN=${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}"
+      # - "DNS_SERVER_PASSWORD=${TECHNITIUM_DEFAULT_PASSWORD:-Is-just-1-REALLY-secure-password-2-much-2-ask-for}" # -- (optional) Set admin password on first boot using environment variable
+      # - "DNS_SERVER_ADMIN_PASSWORD_FILE=${HOST_DATA_FOLDER}/secrets/technitium-password.txt" # -- (optional) Set admin password on first boot using plaintext file
+      # - "DNS_SERVER_FORWARDERS=1.1.1.1,8.8.8.8,9.9.9.9" # -- (optional) Comma separated list of upstream DNS servers.
+    sysctls:
+      - "net.ipv4.ip_local_port_range=1024 65535" # -- (optional) remove when using "host" network mode
+    volumes:
+      - "${HOST_DATA_FOLDER}/apps/technitium/config:/etc/dns:rw"
+      - "${HOST_DATA_FOLDER}/apps/technitium/logs:/var/log/technitium/dns:rw"
+    # -- For DHCP deployments, use "host" network mode and remove all the port mappings, including the ports array
+    # network_mode: "host"
+    networks:
+      - default
+      # - databases # -- (optional) for Postgres connectivity
+    ports:
+      # Technitium needs to "own" port 53
+      - 53:53/tcp           # -- (required) DNS service (TCP)
+      - 53:53/udp           # -- (required) DNS service (UDP)
+      # - "67:67/udp"       # -- (optional) DHCP service
+      # - "80:80/tcp"       # -- (optional) DNS-over-HTTP service (for use with reverse proxy or certbot renewal)
+      # - "443:443/udp"     # -- (optional) DNS-over-HTTPS service (HTTP/3)
+      # - "443:443/tcp"     # -- (optional) DNS-over-HTTPS service (HTTP/1.1, HTTP/2)
+      # - "853:853/udp"     # -- (optional) DNS-over-QUIC service
+      # - "853:853/tcp"     # -- (optional) DNS-over-TLS service
+      # - "8053:8053/tcp"   # -- (optional) DNS-over-HTTP service (for use with reverse proxy)
+    expose:
+      - "${TECHNITIUM_HTTP_CONSOLE_PORT:-5380}/tcp" # -- DNS web console (HTTP)
+      # - "53443:53443/tcp" # -- (optional) DNS web console (HTTPS)
+    deploy:
+      resources:
+        limits:
+          cpus: "${TRAEFIK_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${TRAEFIK_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
+      restart_policy:
+        condition: "on-failure"
+        max_attempts: 10
+    labels:
+      - "io.containers.autoupdate=registry"
+      - "traefik.enable=true"
+      - "traefik.http.services.technitium-dns.loadbalancer.server.port=5380"
+      - "traefik.http.routers.technitium-dns.service=technitium-dns"
+      - "traefik.http.routers.technitium-dns.entrypoints=websecure"
+      - "traefik.http.routers.technitium-dns.rule=Host(`${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.technitium-dns.tls=true"
+      - "traefik.http.routers.technitium-dns.tls.certresolver=production"
+      - "traefik.http.routers.technitium-dns.tls.domains[0].main=${DNS_ZONE_LOCAL}"
+      - "traefik.http.routers.technitium-dns.tls.domains[0].sans=*.${DNS_ZONE_LOCAL}"
+      - "homepage.group=Network Services"
+      - "homepage.name=Technitium DNS: ${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}"
+      - "homepage.icon=sh-nametag.svg"
+      - "homepage.instance.homenetwork.href=https://${TECHNITIUM_HOSTNAME:-ns1}.${DNS_ZONE_LOCAL}"
+      - "homepage.description=Name server 1 for the LAN"
+      - "homepage.weight=10"
+      - "homepage.widget.type=technitium"
+      - "homepage.widget.url=http://technitium-dns:${TECHNITIUM_HTTP_CONSOLE_PORT:-5380}"
+      - "homepage.widget.key=${TECHNITIUM_HOMEPAGE_WIDGET_KEY:-0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF}"
+  traefik:
+    depends_on:
+      - docker-proxy
+    image: "traefik:${TRAEFIK_IMAGE_VERSION:-3}"
+    container_name: traefik
+    security_opt:
+      - "no-new-privileges:true"
+    secrets:
+      - DO_AUTH_TOKEN
+    environment:
+      # TODO: Which format?
+      - "DO_AUTH_TOKEN_FILE=/run/secrets/DO_AUTH_TOKEN"
+      - "DO_AUTH_TOKEN__FILE=/run/secrets/DO_AUTH_TOKEN"
+    expose:
+      - "${TRAEFIK_DASHBOARD_PORT:-8080}" # -- Dashboard
+    ports:
+      - "${HOST_IPV4_LOCAL}:80:80" # -- HTTP
+      - "${HOST_IPV4_LOCAL}:443:443" # -- HTTPS
+    volumes:
+      - "${HOST_DATA_FOLDER}/apps/traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro" # -- config file
+      - "${HOST_DATA_FOLDER}/apps/traefik/logs:/var/log/traefik:rw" # -- for logs
+      - "${HOST_DATA_FOLDER}/apps/traefik/sites:/etc/traefik/sites.d:ro" # -- for File provider
+      - "${HOST_DATA_FOLDER}/secrets/traefik/certs:/etc/traefik/certs:rw" # -- for Let's Encrypt certificates
+      - "${HOST_DATA_FOLDER}/secrets/traefik/live:/etc/traefik/live:rw" # -- (optional) for .pem files
+    labels:
+      - "io.containers.autoupdate=registry"
+      - "homepage.group=Top Services"
+      - "homepage.name=Traefik Dashboard"
+      - "homepage.icon=traefik.png"
+      - "homepage.href=https://${HOST_NAME}.${DNS_ZONE_LOCAL}:${TRAEFIK_DASHBOARD_PORT:-8080}/"
+      - "homepage.description=Dashboard for ${HOST_NAME}'s reverse proxy"
+      - "homepage.widget.type=traefik"
+      - "homepage.widget.url=http://traefik:${TRAEFIK_DASHBOARD_PORT:-8080}"
+    deploy:
+      resources:
+        limits:
+          cpus: "${TRAEFIK_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${TRAEFIK_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
+      restart_policy:
+        condition: "on-failure"
+        max_attempts: 10
+secrets:
+  DO_AUTH_TOKEN:
+    # -- Since we're using DigitalOcean's DNS to verify our Let's Encrypt
+    #    certificates for the local network, we need a DO API token (available at
+    #    https://cloud.digitalocean.com/account/api/tokens ), which is stored in a
+    #    special "secrets" mount (such as a LUKS volume)
+    file: "${HOST_DATA_FOLDER}/secrets/${TRAEFIK_ACME_TOKEN_FILE:-traefik-acme-token.txt}"
