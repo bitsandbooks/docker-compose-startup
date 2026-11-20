@@ -190,10 +190,6 @@ services:
         max_attempts: 3
     labels:
       - "io.containers.autoupdate=registry"
-      - "com.nihilsum.class=composed"
-      - "com.nihilsum.service:startup=true"
-      - "com.nihilsum.service:base=true"
-      - "traefik.enable=true"
       - "traefik.http.services.pgadmin.loadbalancer.server.port=${PGADMIN_LISTEN_PORT:-80}"
       - "traefik.http.routers.pgadmin.entrypoints=websecure"
       - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"

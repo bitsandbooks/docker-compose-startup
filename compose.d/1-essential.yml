@@ -30,7 +30,4 @@ services:
         condition: "on-failure"
         max_attempts: 10
     labels:
-      - "com.nihilsum.class=composed"
-      - "com.nihilsum.service:startup=true"
-      - "com.nihilsum.service:base=true"
       - "io.containers.autoupdate=registry"
