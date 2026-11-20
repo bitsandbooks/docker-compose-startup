@@ -19,8 +19,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: "1G"
+          cpus: "${SYNCTHING_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${SYNCTHING_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
         condition: "on-failure"
         max_attempts: 10
