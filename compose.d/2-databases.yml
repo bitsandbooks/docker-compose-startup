@@ -151,6 +151,12 @@ services:
       restart_policy:
         condition: "on-failure"
         max_attempts: 3
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "postgres"]
+      start_period: 10s
+      interval: 30s
+      timeout: 10s
+      retries: 3
     labels:
       - "io.containers.autoupdate=registry"
       - "com.nihilsum.class=composed"
