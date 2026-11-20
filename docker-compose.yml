@@ -24,10 +24,8 @@ include:
   # - path:     ${HOST_COMPOSE_FOLDER}/servicename.yml
   #   env_file: ${HOST_COMPOSE_FOLDER}/servicename.env
 
-  # -- Essential services; do not comment out or disable!
-  - path:     ${HOST_COMPOSE_FOLDER}/docker-proxy.yml # -- Allows read-only access to the Docker socket, for use with Traefik and other services
-  - path:     ${HOST_COMPOSE_FOLDER}/dns.yml # -- DNS services for LAN
-  - path:     ${HOST_COMPOSE_FOLDER}/traefik.yml # -- Reverse proxy services for the LAN
+  # -- Essential services; do not comment out or change without a very good reason!
+  - path:     ${HOST_COMPOSE_FOLDER}/1-essential.yml # -- Docker socket proxy, DNS and reverse proxy services for the LAN
 
   # -- Optional services below. Comment out to disable.
   - path:     ${HOST_COMPOSE_FOLDER}/databases.yml
