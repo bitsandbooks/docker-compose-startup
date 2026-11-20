@@ -1,36 +1,38 @@
 services:
-  homepage-local:
-    image: ghcr.io/gethomepage/homepage:${HOMEPAGE_VERSION_TAG:-latest}
-    container_name: homepage-local
-    hostname: ${HOST_NAME}
+  homepage:
+    image: "ghcr.io/gethomepage/homepage:${HOMEPAGE_VERSION_TAG:-latest}"
+    container_name: "homepage"
+    hostname: "${HOST_NAME}"
     environment:
-      PUID: ${HOST_USER_UID}
-      PGID: ${HOST_USER_GID}
-      LOG_LEVEL: debug
-      HOMEPAGE_ALLOWED_HOSTS: ${HOST_FQDN_LOCAL}
+      PUID: "${HOST_USER_UID}"
+      PGID: "${HOST_USER_GID}"
+      LOG_LEVEL: ${HOMEPAGE_LOG_LEVEL:-info} # -- (optional) debug, info, warn, error
+      TZ: "${HOST_TIME_ZONE}"
+      HOMEPAGE_ALLOWED_HOSTS: "${HOST_NAME}.${DNS_ZONE_LOCAL},*.${DNS_ZONE_LOCAL}" # -- (optional) Comma-separated list of allowed hosts for the homepage web interface
     volumes:
-      - ${HOST_DATA_FOLDER}/apps/homepage/config:/app/config:rw
-      - ${HOST_DATA_FOLDER}/apps/homepage/assets:/app/public/assets:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro # (optional) For docker integrations
+      - "${HOST_DATA_FOLDER}/apps/homepage/config:/app/config:rw"
+      - "${HOST_DATA_FOLDER}/apps/homepage/assets:/app/public/assets:rw"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro" # (optional) For docker integrations
     extra_hosts:
-      - host.docker.internal:host-gateway
+      - "host.docker.internal:host-gateway"
     expose:
-      - ${HOMEPAGE_HTTP_PORT:-3000}
+      - "${HOMEPAGE_HTTP_PORT:-3000}"
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 1G
+          cpus: "${HOMEPAGE_CPU_LIMIT:-${DEFAULT_CPU_LIMIT}}"
+          memory: "${HOMEPAGE_MEMORY_LIMIT:-${DEFAULT_MEMORY_LIMIT}}"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 10
     labels:
-      io.containers.autoupdate: registry
-      traefik.enable: true
-      traefik.http.routers.homepage.entrypoints: websecure
-      traefik.http.routers.homepage.rule: "Host(`${HOST_FQDN_LOCAL}`)"
-      traefik.http.routers.homepage.tls: true
-      traefik.http.routers.homepage.tls.certresolver: production
-      traefik.http.routers.homepage.tls.domains[0].main: "${HOST_FQDN_LOCAL}"
-      traefik.http.routers.homepage.tls.domains[0].sans: "*.${HOST_FQDN_LOCAL}"
-      traefik.http.services.homepage.loadbalancer.server.port: ${HOMEPAGE_HTTP_PORT:-3000}
+      - "io.containers.autoupdate=registry"
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.rule=Host(`${HOST_NAME}`)"
+      - "traefik.http.routers.homepage.service=homepage"
+      - "traefik.http.routers.homepage.tls=true"
+      - "traefik.http.routers.homepage.tls.certresolver=production"
+      - "traefik.http.routers.homepage.tls.domains[0].main=${HOST_NAME}.${DNS_ZONE_LOCAL},*.${DNS_ZONE_LOCAL}" # -- (optional) Comma-separated list of allowed hosts for the homepage web interface
+      - "traefik.http.routers.homepage.tls.domains[0].sans=*.${HOST_NAME}.${DNS_ZONE_LOCAL},*.${DNS_ZONE_LOCAL}" # -- (optional) Comma-separated list of allowed hosts for the homepage web interface
+      - "traefik.http.services.homepage.loadbalancer.server.port=${HOMEPAGE_HTTP_PORT:-3000}"
