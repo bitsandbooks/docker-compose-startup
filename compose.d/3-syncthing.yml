@@ -1,43 +1,42 @@
 services:
   syncthing:
-    image: lscr.io/linuxserver/syncthing:${SYNCTHING_IMAGE_VERSION:-amd64-latest}
-    container_name: syncthing
-    hostname: ${HOST_NAME}
+    image: "lscr.io/linuxserver/syncthing:${SYNCTHING_IMAGE_VERSION:-latest}"
+    container_name: "syncthing"
+    hostname: "${HOST_NAME}"
     environment:
-      PUID: ${HOST_USER_UID}
-      PGID: ${HOST_USER_GID}
-      TZ: ${HOST_TIME_ZONE}
+      - "PUID=${HOST_USER_UID}"
+      - "PGID=${HOST_USER_GID}"
+      - "TZ=${HOST_TIME_ZONE}"
     volumes:
-      - ${HOST_DATA_FOLDER}/apps/syncthing/data:/data:rw
-      - ${HOST_DATA_FOLDER}/apps/syncthing/config:/config:rw
+      - "${HOST_DATA_FOLDER}/apps/syncthing/data:/data:rw"
+      - "${HOST_DATA_FOLDER}/apps/syncthing/config:/config:rw"
     expose:
-      - ${SYNCTHING_WEB_PORT:-8384}
+      - "${SYNCTHING_WEB_PORT:-8384}"
     ports:
-      - 21027:21027/udp
-      - 22000:22000/udp
-      - 22000:22000/tcp
+      - "21027:21027/udp"
+      - "22000:22000/udp"
+      - "22000:22000/tcp"
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 1G
+          memory: "1G"
       restart_policy:
-        condition: on-failure
+        condition: "on-failure"
         max_attempts: 10
     labels:
-      io.containers.autoupdate: registry
-      traefik.enable: true
-      traefik.http.routers.syncthing.entrypoints: websecure
-      traefik.http.routers.syncthing.rule: "Host(`syncthing.${HOST_FQDN_LOCAL}`)"
-      traefik.http.routers.syncthing.tls: true
-      traefik.http.routers.syncthing.tls.certresolver: production
-      traefik.http.services.syncthing.loadbalancer.server.port: ${SYNCTHING_WEB_PORT:-8384}
-      homepage.group: System Services
-      homepage.name: SyncThing
-      homepage.description: Roll your own Dropbox
-      homepage.icon: syncthing.png
-      homepage.href: "https://syncthing.${HOST_FQDN_LOCAL}"
-      glance.name: SyncThing
-      glance.icon: sh:syncthing
-      glance.description: File sync service
-      glance.url: https://syncthing.${HOST_FQDN_LOCAL}
+      - "io.containers.autoupdate=registry"
+      - "traefik.enable=true"
+      - "traefik.http.services.syncthing.loadbalancer.server.port=${SYNCTHING_WEB_PORT:-8384}"
+      - "traefik.http.routers.syncthing.service=syncthing"
+      - "traefik.http.routers.syncthing.entrypoints=websecure"
+      - "traefik.http.routers.syncthing.rule=Host(`syncthing.${HOST_NAME}.${DNS_ZONE_LOCAL}`)"
+      - "traefik.http.routers.syncthing.tls=true"
+      - "traefik.http.routers.syncthing.tls.certresolver=production"
+      - "traefik.http.routers.syncthing.tls.domains[0].main=${DNS_ZONE_LOCAL}"
+      - "traefik.http.routers.syncthing.tls.domains[0].sans=*.${DNS_ZONE_LOCAL}"
+      - "homepage.group=System Services"
+      - "homepage.name=SyncThing"
+      - "homepage.description=Roll your own Dropbox"
+      - "homepage.icon=syncthing.png"
+      - "homepage.href=https://syncthing.${HOST_NAME}.${DNS_ZONE_LOCAL}"
