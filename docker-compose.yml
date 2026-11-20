@@ -32,9 +32,8 @@ include:
   #    to manually manage the service, or remove the line to disable it.
   - path:     ${HOST_COMPOSE_FOLDER}/2-databases.yml
     env_file: ${HOST_COMPOSE_FOLDER}/2-databases.env
-  - path:     ${HOST_COMPOSE_FOLDER}/syncthing.yml
-  - path:     ${HOST_COMPOSE_FOLDER}/portainer.yml
-  - path:     ${HOST_COMPOSE_FOLDER}/homepage.yml
-  - path:     ${HOST_COMPOSE_FOLDER}/backrest.yml
-  - path:     ${HOST_COMPOSE_FOLDER}/filebrowser.yml
-  - path:     ${HOST_COMPOSE_FOLDER}/plex.yml
+  - path:     ${HOST_COMPOSE_FOLDER}/2-plex.yml
+  - path:     ${HOST_COMPOSE_FOLDER}/3-syncthing.yml
+  - path:     ${HOST_COMPOSE_FOLDER}/3-portainer.yml
+  - path:     ${HOST_COMPOSE_FOLDER}/3-homepage.yml
+  - path:     ${HOST_COMPOSE_FOLDER}/3-backrest.yml
