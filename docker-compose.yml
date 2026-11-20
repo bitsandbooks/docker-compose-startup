@@ -24,12 +24,14 @@ include:
   # - path:     ${HOST_COMPOSE_FOLDER}/servicename.yml
   #   env_file: ${HOST_COMPOSE_FOLDER}/servicename.env
 
-  # -- Essential services; do not comment out or change without a very good reason!
+  # -- Essential services; do not comment out or change without
+  #    a very, VERY good reason!
   - path:     ${HOST_COMPOSE_FOLDER}/1-essential.yml # -- Docker socket proxy, DNS and reverse proxy services for the LAN
 
-  # -- Optional services below. Comment out to disable.
-  - path:     ${HOST_COMPOSE_FOLDER}/databases.yml
-    env_file: ${HOST_COMPOSE_FOLDER}/databases.env
+  # -- Shared services; each filename should start with "2-". Comment out
+  #    to manually manage the service, or remove the line to disable it.
+  - path:     ${HOST_COMPOSE_FOLDER}/2-databases.yml
+    env_file: ${HOST_COMPOSE_FOLDER}/2-databases.env
   - path:     ${HOST_COMPOSE_FOLDER}/syncthing.yml
   - path:     ${HOST_COMPOSE_FOLDER}/portainer.yml
   - path:     ${HOST_COMPOSE_FOLDER}/homepage.yml
